@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Your Radio Station</title>
+    <link rel="icon" href="https://d1xwysupjizl5b.cloudfront.net/faviconlogo.png" type="image/png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&display=swap');
+        @import url("https://use.typekit.net/tae2hei.css");
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            font-family: "Afacad Flux", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 300;
+            font-style: normal;
+            font-size: 120%;
+            font-variation-settings:
+                "slnt" 0;
+        }
+
+        .container {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
+
+        .editor {
+            width: 50%;
+            padding: 20px 40px;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            border-right: 2px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .editor h1 {
+            font-size: 1.5em;
+            margin-bottom: 7px;
+            margin-top: 70px;
+        }
+
+        .editor form {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .editor label {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        #fileInfo {
+            font-weight: normal;
+        }
+
+        .editor input[type="text"],
+        .editor input[type="url"],
+        .editor input[type="file"] {
+            margin-top: 5px;
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 80%;
+        }
+
+        .editor button {
+            margin-top: 20px;
+            padding: 10px;
+            width: 100%;
+            background-color: #000000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-sizing: border-box;
+            font-family: "Hanken Grotesk", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 500;
+            font-style: normal;
+            font-size: 100%;
+        }
+
+        .editor button:hover {
+            background-color: #33393e;
+        }
+
+        .message {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 40px;
+            width: 30%;
+            max-width: 552px;
+            height: auto;
+            z-index: 10;
+
+        }
+        .editor #accountButton {
+                margin-top: 1%;
+            }
+        .editor #logout {
+                margin-top: 2%;
+            }
+
+        .preview {
+            width: 50%;
+            height: 100%;
+            background-color: black;
+            position: relative;
+            overflow: hidden;
+        }
+
+        iframe,
+        audio {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(2.5);
+            height: 100%;
+            width: auto;
+            min-width: 100%;
+            min-height: 100%;
+            border: none;
+            pointer-events: none;
+        }
+
+        #play-button {
+            position: absolute;
+            z-index: 10;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 160px;
+            height: 160px;
+            border-radius: 20%;
+            background: #000;
+            cursor: pointer;
+            transition: opacity 1.2s ease;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            display: none;
+            opacity: 0;
+        }
+
+        #play-symbol {
+            position: relative;
+            width: 0;
+            height: 0;
+            border-left: 140px solid #fff;
+            border-top: 80px solid transparent;
+            border-bottom: 80px solid transparent;
+            z-index: 11;
+            transition: opacity 1.2s ease;
+            animation: none;
+            left: 10px;
+        }
+
+
+        @keyframes shake {
+
+            0%,
+            93% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            94%,
+            96% {
+                transform: translate(0, 0) rotate(5deg);
+            }
+
+            97%,
+            99% {
+                transform: translate(0, 0) rotate(-5deg);
+            }
+
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+        }
+
+        #play-button:before {
+            content: "";
+            position: absolute;
+            z-index: 0;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: #000;
+            border-radius: 20%;
+            animation: pulse-border 1500ms ease-out infinite;
+        }
+
+        #play-button:after {
+            content: "";
+            position: absolute;
+            z-index: 1;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: #000;
+            border-radius: 20%;
+            transition: all 200ms;
+        }
+
+        .fade-out {
+            opacity: 0;
+        }
+
+        audio {
+            display: none;
+        }
+
+        .preview-message {
+            color: white;
+            font-size: 1.5em;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
+        #youtubeInputLabel {
+            margin-top: 10px;
+        }
+
+        #radioMixInputLabel {
+            margin-bottom: 0;
+        }
+
+        #socialPreview {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: white;
+            font-family: "acumin-pro", sans-serif;
+      font-weight: 400;
+      font-style: normal;
+            font-size: 16px;
+            display: none;
+        }
+
+        .watermark {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            z-index: 100;
+            transform: none;
+            display: none;
+        }
+
+        .watermark img {
+            width: 100px;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .watermark img:hover {
+            opacity: 1;
+        }
+
+
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+
+
+            .editor,
+            .preview {
+                width: 100%;
+                border-right: none;
+            }
+
+            .editor {
+                padding: 10px;
+                flex-grow: 1;
+                height: auto;
+                overflow: visible;
+            }
+
+
+            .preview {
+                height: auto;
+                min-height: 50vh;
+            }
+
+            .editor .logo {
+                position: absolute;
+                top: 4px;
+                left: 4px;
+                width: 50%;
+                max-width: 552px;
+                height: auto;
+                z-index: 10;
+            }
+
+            .editor h1 {
+                font-size: 1.5em;
+                margin-bottom: 2px;
+                margin-top: 50px;
+            }
+
+            .editor input[type="text"],
+            .editor input[type="url"],
+            .editor input[type="file"],
+            .editor input[type="checkbox"],
+            .editor button {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+            .editor button {
+                font-size:1em;
+            };
+
+            .editor #updateStation {
+                margin-top: 2%;
+            }
+            .editor #accountButton {
+                margin-top: 1%;
+            }
+            .editor .message {
+              margin-top:2%;
+            }
+
+            .editor #logout {
+                margin-top: 2%;
+            }
+
+            .editor label {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Left: Form Editor -->
+        <div class="editor">
+            <a href="/">
+            <img src="https://d1xwysupjizl5b.cloudfront.net/headerlogo.png"
+                alt="WTR? Logo" class="logo">
+            </a>
+            <h1>Edit Your Radio:</h1>
+            <form id="stationForm" action="/update-station" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="email" value="<%= station ? station.email : '' %>">
+                <input type="hidden" id="audioDuration" name="audioDuration">
+                <input type="hidden" id="originalFilename" name="originalFilename">
+
+                <label for="name">Name: <input type="text" id="name" name="name" placeholder="Station Name"
+                        value="<%= station ? station.name : '' %>" required></label>
+
+                <label id="radioMixInputLabel" for="radioMix">Radio Mix (.wav): <inline id="fileInfo">
+                    </inline> </label>
+                <input type="file" name="radioMix" id="radioMix">
+
+                <label id="youtubeInputLabel" for="youtubeUrl">YouTube URL: <input type="url" id="youtubeUrl"
+                        name="youtubeUrl" placeholder="YouTube URL"
+                        value="<%= station ? station.youtubeUrl : '' %>"></label>
+
+                <label for="socialLink">Social Link (optional):</label>
+                <input type="url" id="socialLink" name="socialLink" placeholder="Enter X or Instagram profile URL"
+                    value="<%= station ? station.socialLink : '' %>">
+                
+                <button id='updateStation' type="submit">Update Station</button>
+    
+                <% if (stationUpdated) { %>
+                    <p class="message">Your radio station has been updated!</p>
+                    <% } %>
+                        <% if (stationLive) { %>
+                            <p class="message">Live at <a href="/<%= station.name %>">whattheradio.io/<%=
+                                        station.name %></a></p>
+                            <% } %>
+                              
+            </form>
+            <form action="/account" method="GET">
+                <button id='accountButton' type="submit">Your Account</button>
+            </form>
+            <form action="/logout" method="GET">
+                <button id='logout' type="submit">Logout</button>
+            </form>
+        </div>
+
+        <!-- Right: Preview Section -->
+        <div class="preview">
+            <div class="preview-message" id="previewMessage">Upload a radio mix to start the preview :-)</div>
+            <button id="play-button" class="hidden">
+                <span id="play-symbol"></span>
+            </button>
+            <iframe id="youtubePreview"></iframe>
+            <audio id="audioPreview" preload="auto" loop>
+                <source id="audioSource" type="audio/wav">
+                Your browser does not support the audio element.
+            </audio>
+            <div id="socialPreview">
+                <span id="socialIcon"></span>
+                <span id="socialUserTag"></span>
+            </div>
+
+            <% if (userTier === 'Free') { %>
+            <a href="/" target="_blank" class="watermark">
+                <img src="https://d1xwysupjizl5b.cloudfront.net/watermarklogo.png"
+                    alt="WTR? Logo">
+            </a>
+            <% } %>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.0/lame.min.js"></script>
+
+    <script>
+        const youtubeUrlInput = document.getElementById('youtubeUrl');
+        const radioMixInput = document.getElementById('radioMix');
+        const playButton = document.getElementById('play-button');
+        const playSymbol = document.getElementById('play-symbol');
+        const audioPreview = document.getElementById('audioPreview');
+        const audioSource = document.getElementById('audioSource');
+        const youtubePreview = document.getElementById('youtubePreview');
+        let audioDuration;
+        const audioDurationInput = document.getElementById('audioDuration');
+        const socialLinkInput = document.getElementById('socialLink');
+        const socialIcon = document.getElementById('socialIcon');
+        const socialUserTag = document.getElementById('socialUserTag');
+        const socialPreview = document.getElementById('socialPreview');
+        const updateStationButton = document.getElementById('updateStation');
+        var updateButtonFirstClick = true;
+        let radioMixFileSizeKB;
+
+
+        // Function to convert a YouTube "share button" URL to the "browser" URL
+function convertYouTubeShareUrl(youtubeUrl) {
+    // Check if the URL is in the "share button" format (youtu.be)
+    const shareUrlPattern = /^https:\/\/youtu\.be\/([a-zA-Z0-9_-]{11})(.*)$/;
+
+    const match = youtubeUrl.match(shareUrlPattern);
+    if (match) {
+        // Extract the video ID and return the browser URL format
+        const videoId = match[1];
+        return `https://www.youtube.com/watch?v=${videoId}`;
+    }
+
+    // If it's already a browser URL or an invalid format, return the original URL
+    return youtubeUrl;
+}
+
+        function parseProfileLink(url) {
+            const xPattern = /^https?:\/\/(www\.)?x\.com\/([A-Za-z0-9_]+)\/?$/;
+            const instagramPattern = /^https?:\/\/(www\.)?instagram\.com\/([A-Za-z0-9_.]+)\/?$/;
+
+            let match;
+
+            // Check for X profile link
+            match = url.match(xPattern);
+            if (match) {
+                return {
+                    website: 'X',
+                    userTag: '@' + match[2]
+                };
+            }
+
+            // Check for Instagram profile link
+            match = url.match(instagramPattern);
+            if (match) {
+                return {
+                    website: 'Instagram',
+                    userTag: '@' + match[2]
+                };
+            }
+
+            // Return null if invalid
+            return null;
+        }
+
+        function updateSocialPreview() {
+            const socialLink = socialLinkInput.value.trim();
+            const file = document.getElementById('radioMix').files[0];  // Check if the radio mix is uploaded
+
+            // Clear the current preview
+            socialIcon.innerHTML = '';
+            socialUserTag.textContent = '';
+
+            // If there's no radio mix, hide the social media preview
+            if (!file) {
+                socialPreview.style.display = 'none';
+                return;
+            }
+
+            // If the social media link is empty, hide the preview
+            if (!socialLink) {
+                socialPreview.style.display = 'none';
+                return;
+            }
+
+            // Validate the social link
+            const profileData = parseProfileLink(socialLink);
+
+            if (profileData) {
+                // Show the preview and set the correct icon and user tag
+                socialPreview.style.display = 'flex';
+                socialUserTag.textContent = profileData.userTag;
+
+                // Add the appropriate SVG icon
+                if (profileData.website === 'X') {
+    socialIcon.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="24px" height="24px">
+            <rect x="11" y="4" width="28" height="42" fill="#ffffff"/> <!-- Adjusted white background -->
+            <path d="M 11 4 C 7.134 4 4 7.134 4 11 L 4 39 C 4 42.866 7.134 46 11 46 L 39 46 C 42.866 46 46 42.866 46 39 L 46 11 C 46 7.134 42.866 4 39 4 L 11 4 z M 13.085938 13 L 21.023438 13 L 26.660156 21.009766 L 33.5 13 L 36 13 L 27.789062 22.613281 L 37.914062 37 L 29.978516 37 L 23.4375 27.707031 L 15.5 37 L 13 37 L 22.308594 26.103516 L 13.085938 13 z M 16.914062 15 L 31.021484 35 L 34.085938 35 L 19.978516 15 L 16.914062 15 z" fill="#000000"/>
+        </svg>`;
+} else if (profileData.website === 'Instagram') {
+                    socialIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px">
+                                        <radialGradient id="yOrnnhliCrdS2gy~4tD8ma" cx="19.38" cy="42.035" r="44.899" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0" stop-color="#fd5"/>
+                                            <stop offset=".328" stop-color="#ff543f"/>
+                                            <stop offset=".348" stop-color="#fc5245"/>
+                                            <stop offset=".504" stop-color="#e64771"/>
+                                            <stop offset=".643" stop-color="#d53e91"/>
+                                            <stop offset=".761" stop-color="#cc39a4"/>
+                                            <stop offset=".841" stop-color="#c837ab"/>
+                                        </radialGradient>
+                                        <path fill="url(#yOrnnhliCrdS2gy~4tD8ma)" d="M34.017,41.99l-20,0.019c-4.4,0.004-8.003-3.592-8.008-7.992l-0.019-20
+                                            c-0.004-4.4,3.592-8.003,7.992-8.008l20-0.019c4.4-0.004,8.003,3.592,8.008,7.992l0.019,20C42.014,38.383,38.417,41.986,34.017,41.99z"/>
+                                        <radialGradient id="yOrnnhliCrdS2gy~4tD8mb" cx="11.786" cy="5.54" r="29.813" gradientTransform="matrix(1 0 0 .6663 0 1.849)" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0" stop-color="#4168c9"/>
+                                            <stop offset=".999" stop-color="#4168c9" stop-opacity="0"/>
+                                        </radialGradient>
+                                        <path fill="url(#yOrnnhliCrdS2gy~4tD8mb)" d="M34.017,41.99l-20,0.019c-4.4,0.004-8.003-3.592-8.008-7.992l-0.019-20
+                                            c-0.004-4.4,3.592-8.003,7.992-8.008l20-0.019c4.4-0.004,8.003,3.592,8.008,7.992l0.019,20C42.014,38.383,38.417,41.986,34.017,41.99z"/>
+                                        <path fill="#fff" d="M24,31c-3.859,0-7-3.14-7-7s3.141-7,7-7s7,3.14,7,7S27.859,31,24,31z M24,19c-2.757,0-5,2.243-5,5
+                                            s2.243,5,5,5s5-2.243,5-5S26.757,19,24,19z"/>
+                                        <circle cx="31.5" cy="16.5" r="1.5" fill="#fff"/>
+                                        <path fill="#fff" d="M30,37H18c-3.859,0-7-3.14-7-7V18c0-3.86,3.141-7,7-7h12c3.859,0,7,3.14,7,7v12C37,33.86,33.859,37,30,37z M18,13
+                                            c-2.757,0-5,2.243-5,5v12c0,2.757,2.243,5,5,5h12c2.757,0,5-2.243,5-5V18c0-2.757-2.243-5-5-5H18z"/>
+                                    </svg>`;
+                }
+
+                // Wrap the socialPreview content in a clickable link
+                        socialPreview.innerHTML = `<a href="${socialLink}" target="_blank" style="display: flex; align-items: center; gap: 5px; color: white; text-decoration: none;">
+                                ${socialIcon.innerHTML} ${socialUserTag.textContent}
+                            </a>`;
+            } else {
+                // If the link is invalid, hide the preview and alert user
+                socialPreview.style.display = 'none';
+                alert('Please enter a valid X or Instagram profile link.');
+            }
+        }
+
+        // Event listener for social link input changes
+        socialLinkInput.addEventListener('input', updateSocialPreview);
+
+        function updatePreview() {
+
+
+
+            const youtubeUrl = youtubeUrlInput.value.trim();
+
+             // Convert the URL if it's a share URL
+             const convertedUrl = convertYouTubeShareUrl(youtubeUrl);
+
+            // If the URL was converted, update the input field with the browser format URL
+            if (convertedUrl !== youtubeUrl) {
+                youtubeUrlInput.value = convertedUrl;
+            }
+
+            const file = radioMixInput.files[0];
+
+            // Show preview based on the YouTube URL or file selected
+            if (youtubeUrl) {
+                const videoId = getYouTubeVideoId(youtubeUrl);
+                youtubePreview.src = `https://www.youtube.com/embed/${videoId}?mute=1&controls=0&loop=1&rel=0&modestbranding=1`;
+                youtubePreview.style.display = 'block';
+            } else {
+                youtubePreview.style.display = 'none';
+            }
+
+            if (file) {
+                const radioMixFileSizeBytes = file.size;
+                radioMixFileSizeKB = (radioMixFileSizeBytes / 1024).toFixed(2);
+                console.log(`radioMixFileSizeKB: ${radioMixFileSizeKB}`);
+                const audioURL = URL.createObjectURL(file);
+                audioSource.src = audioURL;
+                audioPreview.load();
+
+                // Hide the preview message and show the play button
+                previewMessage.style.display = 'none';
+                playButton.style.display = 'flex';
+                playButton.style.opacity = 1;  // Fade-in the play button
+                playSymbol.style.display = 'block';
+                playSymbol.style.opacity = 1;  // Fade-in the play button
+                playSymbol.style.animation = 'shake 3s ease infinite';  // Start the shake animation
+                updateSocialPreview();
+            } else {
+                // If no file is uploaded, show the preview message
+                previewMessage.style.display = 'flex';
+                playButton.style.display = 'none';
+                socialPreview.style.display = 'none';
+                watermark.style.display = 'none';
+                youtubePreview.style.display = 'none';
+            }
+
+            // Show the watermark after the first update
+            const watermark = document.querySelector('.watermark');
+            if (watermark) {
+                watermark.style.display = 'flex'; // Show the watermark after first update
+            }
+        }
+
+
+// Function to convert WAV to MP3 using lame.js
+async function convertWavToMp3(file) {
+    console.log('convertWavToMp3');
+    // if .wav is under 439620 kb do the normal conversion algo
+    if (radioMixFileSizeKB < 439620) {
+        console.log('normal conversion');
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const wavBuffer = new Uint8Array(event.target.result);
+            const wavView = new DataView(wavBuffer.buffer);
+
+            const numOfChannels = wavView.getUint16(22, true);
+            const sampleRate = wavView.getUint32(24, true);
+            const pcmData = new Int16Array(wavBuffer.subarray(44).buffer);
+            const mp3Encoder = new lamejs.Mp3Encoder(numOfChannels, sampleRate, 192);
+
+            let mp3Data = [];
+            const samplesPerFrame = 1152;
+
+            if (numOfChannels === 2) {
+                const leftChannel = [];
+                const rightChannel = [];
+                for (let i = 0; i < pcmData.length; i += 2) {
+                    leftChannel.push(pcmData[i]);
+                    rightChannel.push(pcmData[i + 1]);
+                }
+                for (let i = 0; i < leftChannel.length; i += samplesPerFrame) {
+                    const left = leftChannel.slice(i, i + samplesPerFrame);
+                    const right = rightChannel.slice(i, i + samplesPerFrame);
+                    const mp3Buffer = mp3Encoder.encodeBuffer(left, right);
+                    if (mp3Buffer.length > 0) mp3Data.push(new Uint8Array(mp3Buffer));
+                }
+            } else {
+                for (let i = 0; i < pcmData.length; i += samplesPerFrame) {
+                    const mono = pcmData.subarray(i, i + samplesPerFrame);
+                    const mp3Buffer = mp3Encoder.encodeBuffer(mono);
+                    if (mp3Buffer.length > 0) mp3Data.push(new Uint8Array(mp3Buffer));
+                }
+            }
+
+            const mp3EndBuffer = mp3Encoder.flush();
+            if (mp3EndBuffer.length > 0) mp3Data.push(new Uint8Array(mp3EndBuffer));
+
+            const mp3Blob = new Blob(mp3Data, { type: 'audio/mpeg' });
+            resolve(mp3Blob);
+        };
+        reader.readAsArrayBuffer(file);
+    });
+    } else { // if .wav is over 439620 kb do the chunking conversion algo
+        console.log('chunking conversion');
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const wavBuffer = new Uint8Array(event.target.result);
+                const wavView = new DataView(wavBuffer.buffer);
+
+                // Parse WAV file header and extract PCM data
+                const numOfChannels = wavView.getUint16(22, true); // Mono or Stereo
+                const sampleRate = wavView.getUint32(24, true);    // Sample rate
+                const bitsPerSample = wavView.getUint16(34, true); // Bits per sample
+
+                // Ensure we are reading 16-bit PCM data
+                const pcmData = new Int16Array(wavBuffer.subarray(44).buffer); // PCM data starts at byte 44
+                const mp3Encoder = new lamejs.Mp3Encoder(numOfChannels, sampleRate, 192);  // Create MP3 encoder with 192 kbps
+
+                const samplesPerFrame = 1152;
+
+                let mp3Chunks = [];
+
+                // Split and encode PCM data into MP3 frames
+                for (let i = 0; i < pcmData.length; i += samplesPerFrame) {
+                    const frameData = pcmData.subarray(i, i + samplesPerFrame);
+                    let mp3Buffer;
+
+                    if (numOfChannels === 2) {
+                        // Stereo
+                        const leftChannel = [];
+                        const rightChannel = [];
+
+                        for (let j = 0; j < frameData.length; j += 2) {
+                            leftChannel.push(frameData[j]);
+                            rightChannel.push(frameData[j + 1]);
+                        }
+
+                        mp3Buffer = mp3Encoder.encodeBuffer(leftChannel, rightChannel);
+                    } else {
+                        // Mono
+                        mp3Buffer = mp3Encoder.encodeBuffer(frameData);
+                    }
+
+                    if (mp3Buffer.length > 0) {
+                        const mp3Blob = new Blob([new Uint8Array(mp3Buffer)], { type: 'audio/mpeg' });
+                        mp3Chunks.push(mp3Blob);
+                    }
+                }
+
+                // Finalize the MP3 encoding process
+                const mp3EndBuffer = mp3Encoder.flush();
+                if (mp3EndBuffer.length > 0) {
+                    const mp3EndBlob = new Blob([new Uint8Array(mp3EndBuffer)], { type: 'audio/mpeg' });
+                    mp3Chunks.push(mp3EndBlob);
+                }
+
+                // Combine all MP3 chunks into one MP3 file
+                const finalMp3Blob = new Blob(mp3Chunks, { type: 'audio/mpeg' });
+                resolve(finalMp3Blob);
+            };
+
+            // Read the WAV file as an ArrayBuffer
+            reader.readAsArrayBuffer(file);
+    });
+    }
+
+}
+
+        function getYouTubeVideoId(url) {
+            const urlParams = new URLSearchParams(new URL(url).search);
+            return urlParams.get('v');
+        }
+
+        function startLiveStream() {
+            console.log('starting live stream...');
+            audioPreview.currentTime = 0;
+            setTimeout(() => {
+                audioPreview.play();
+            }, 100);
+        }
+
+        playButton.addEventListener('click', () => {
+            const file = radioMixInput.files[0];
+            if (file) {
+                startLiveStream(); // Start the live stream if file exists
+            }
+            if (youtubeUrlInput.value) {
+                youtubePreview.src += '&autoplay=1'; // Start YouTube video playback
+            }
+
+            // Add fade-out class to the play button and play symbol
+            playSymbol.classList.add('fade-out');
+            playButton.classList.add('fade-out');
+
+            // Remove the shake animation when the button is clicked
+            playSymbol.style.animation = 'none';
+
+            // Hide the play button after 1 second
+            setTimeout(() => {
+                playButton.style.display = 'none';
+            }, 1000); // Matches the CSS transition duration
+        });
+
+        audioPreview.addEventListener('canplaythrough', () => {
+            audioDuration = audioPreview.duration;
+            if (!isNaN(audioDuration) && audioDuration > 0) {
+                audioDurationInput.value = audioDuration;  // Store the duration in the hidden input field
+            }
+        });
+
+        youtubeUrlInput.addEventListener('input', updatePreview);
+        radioMixInput.addEventListener('change', updatePreview);
+        // Additional form validation for file upload
+        document.getElementById('stationForm').addEventListener('submit', async function (event) {
+    event.preventDefault(); // Prevent default form submission initially
+
+    <% if (!canUpdate) { %>       
+    alert("You're out of updates for today. Upgrade your tier or wait until tomorrow to update again.");
+    <% } %>
+ 
+    <% if (canUpdate) { %>       
+
+    // really terrible naming of variables here but no time, todo: fix
+    const originalName = document.getElementById('name').value;
+    const originalYouTubeUrl = document.getElementById('youtubeUrl').value;
+    const originalFilename = document.getElementById('originalFilename').value;
+    const originalSocialLink = socialLinkInput.value.trim();
+    const selectedFile = document.getElementById('radioMix').files[0];
+
+    const initialName = '<%= station ? station.name : "" %>';
+    const initialYouTubeUrl = '<%= station ? station.youtubeUrl : "" %>';
+    const initialSocialLink = '<%= station ? station.socialLink : "" %>';
+
+    let changesMade = false;
+
+    // Check if name has changed
+    if (originalName !== initialName) {
+        changesMade = true;
+    }
+
+    // Check if YouTube URL has changed (or is empty if Audio Visualizer is checked)
+    if (originalYouTubeUrl !== initialYouTubeUrl) {
+        changesMade = true;
+    }
+
+    // Check if social link has changed
+    if (originalSocialLink !== initialSocialLink) {
+        changesMade = true;
+    }
+
+    // Check if a new file has been selected
+    if (selectedFile && selectedFile.name !== originalFilename) {
+        changesMade = true;
+    }
+
+    // Prevent form submission if no changes were made
+    if (!changesMade) {
+        alert('No changes were made. Please modify at least one field before submitting.');
+        return;
+    }
+
+    // assert that the file is a .wav file
+    if (selectedFile && !(selectedFile.type === "audio/wav" || selectedFile.type === "audio/x-wav" || selectedFile.type === "audio/wave" || selectedFile.type === "audio/x-pn-wav" )) {
+        alert('Please upload a .wav file.');
+        return;
+    }
+
+    // Assert radio mix filesize is under limit
+    const maxFilesizeKB = parseInt('<%= maxFilesizeKB %>');
+    if (radioMixFileSizeKB > maxFilesizeKB) {
+        const maxFilesizeMB = maxFilesizeKB/1000;
+        alert(`Your radio mix is over the max size for your tier (${maxFilesizeMB}MB), please decrease its size or upgrade your tier.`);
+        return;
+    }
+
+    // Assert that there is a youtube url
+    if (!originalYouTubeUrl) {
+        alert('Please enter a valid YouTube URL.');
+        return;
+    }
+
+    // Regular expression to validate both youtube.com and youtu.be links
+    const youtubeUrlPattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([a-zA-Z0-9_-]{11})(\S*)?$/;
+
+    // Check if the YouTube URL matches the pattern
+    if (!youtubeUrlPattern.test(originalYouTubeUrl)) {
+        alert('Please enter a valid YouTube URL.');
+        return;
+    }
+
+    // Validate the social link (if it isn't empty)
+    const profileData = parseProfileLink(originalSocialLink);
+    if (!profileData && originalSocialLink !== '') {
+        alert('Please enter a valid X or Instagram profile link.');
+        return;
+    }
+
+    // Check if the station name is available
+    const nameCheckResponse = await fetch('/check-station-name', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: originalName }),
+    });
+    const nameCheckResult = await nameCheckResponse.json();
+
+    if (!nameCheckResult.available) {
+        alert('Sorry, that station name is already taken.');
+        return; // Stop the form submission process
+    }
+
+    // First-time update confirmation
+    if (updateButtonFirstClick) {
+        updateButtonFirstClick = false;
+        const updatesLeft = '<%= updatesLeft ? updatesLeft : "a limited number of" %>';
+        alert(`Are you sure? You have ${updatesLeft} update(s) left today. You can always preview your changes on this page.`);
+        updateStationButton.textContent = 'Really Update Station?';
+        return;
+    }
+
+        // Update the button text to show the user that the process might take a while
+        updateStationButton.textContent = 'Updating Station... (may take a couple minutes)';
+        updateStationButton.disabled = true;
+
+console.log('selectedFile:', selectedFile);
+    // If a .wav file is selected, convert it to MP3 before form submission
+    if (selectedFile) {
+        try {
+            // Convert the .wav file to .mp3 using lame.js
+            const mp3File = await convertWavToMp3(selectedFile);
+            // Extract the original file name without extension
+            const originalFileNameWithoutExtension = selectedFile.name.split('.').slice(0, -1).join('.');
+
+            // Create new FormData and replace the .wav file with the converted .mp3 file
+            const formData = new FormData(document.getElementById('stationForm'));
+            formData.delete('radioMix'); // Remove the .wav file
+            formData.append('radioMix', mp3File, `${originalFileNameWithoutExtension}.mp3`); // Add the .mp3 file with the same name
+
+            // Submit the form data via fetch (AJAX submission)
+            const response = await fetch(stationForm.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                alert('Your station has been successfully updated!');
+                // Optionally, reload or redirect
+                location.reload(); // Refresh the page after successful submission
+            } else {
+                console.log(response);
+                alert('Error updating station. Please try again in a bit.');
+            }
+        } catch (error) {
+            alert('Error updating station. Please try again in a bit.');
+            console.error(error);
+        } finally {
+            // Reset the button text and enable it again
+            updateStationButton.textContent = 'Update Station';
+            updateStationButton.disabled = false;
+        }
+    } else {
+        // If no WAV file or another file type, submit the form normally
+        // Create new FormData and replace the .wav file with the converted .mp3 file
+        const formData = new FormData(document.getElementById('stationForm'));
+        
+        // Submit the form data via fetch (AJAX submission)
+            const response = await fetch(stationForm.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                alert('Your station has been successfully updated!');
+                // Optionally, reload or redirect
+                location.reload(); // Refresh the page after successful submission
+            } else {
+                console.log(response);
+                alert('Error updating station. Please try again in a bit.');
+            }
+        }
+    <% } %>
+
+});
+
+
+
+const originalFilenameInput = document.getElementById('originalFilename');
+    const fileInfoElement = document.getElementById('fileInfo');
+    // Get the original filename from the server (station.originalFilename)
+    let originalFilename = "<%= station && station.originalFilename ? station.originalFilename : '' %>";
+
+    // Check if there is an originalFilename and if it ends with .mp3
+    if (originalFilename && originalFilename.endsWith('.mp3')) {
+        // Replace .mp3 with .wav
+        const modifiedFilename = originalFilename.replace('.mp3', '.wav');
+        // Set the modified filename in the hidden input field and the fileInfo element
+        originalFilenameInput.value = modifiedFilename;
+        fileInfoElement.textContent = modifiedFilename;
+    } else {
+        // If there's no originalFilename, display the default message
+        fileInfoElement.textContent = 'No file uploaded yet.';
+    }
+
+    </script>
+</body>
+
+</html>

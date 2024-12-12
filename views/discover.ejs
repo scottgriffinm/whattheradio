@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discover</title>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&display=swap');
+    /* General page styling */
+    body {
+        font-family: "Afacad Flux", sans-serif;
+      font-optical-sizing: auto;
+      font-weight: 300;
+      font-style: normal;
+      font-size: 1.25em;
+      font-variation-settings:
+        "slnt" 0;
+      padding: 20px;
+      background-color: #000;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    /* Header styles */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 1200px;
+      align-items: center;
+    }
+
+    .logo img {
+      height: 50px;
+    }
+
+    .header-link {
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.1em;
+      font-weight: 300;
+      margin-right: 5px;
+      margin-left: 5px;
+      margin-bottom: 4px;
+      text-align: right;
+    }
+
+    /* Grid and station styling */
+    .station-grid {
+      display: grid;
+      gap: 15px 20px;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 20px;
+    }
+
+    .station-container {
+      text-align: left;
+    }
+
+    .station-item {
+      background-color: #333;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+      height: 150px;
+    }
+
+    .station-thumbnail {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.2);
+    }
+
+    /* Station name and reactions */
+    .station-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      margin-top: 0px;
+    }
+
+    .station-name {
+      font-size: 1.2em;
+      color: #fff;
+    }
+
+    /* Reaction styling */
+    .reaction-container {
+      display: flex;
+      gap: 5px;
+    }
+
+    .reaction {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      background-color: #313131;
+      color: #fff;
+      padding: 3px 8px;
+      margin-top: 5px;
+      border-radius: 4px;
+      font-size: 0.7em;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .reaction[data-type="likes"].selected {
+      background-color: rgb(117, 33, 159); /* Blue color for likes */
+    }
+
+    .reaction[data-type="flags"].selected {
+      background-color: #7b1e1e; /* Red color for flags */
+    }
+
+    /* Link reset styling */
+    a {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <div class="logo">
+      <a href="/login">
+        <img src="https://d1xwysupjizl5b.cloudfront.net/watermarklogo.png" alt="WhatTheRadio Logo">
+      </a>
+    </div>
+    <div class="header-link">
+      <% if (session.email) { %>
+        <a href="/landing/<%= session.email %>" class="header-link">Your station🔧</a>
+      <% } else { %>
+        <a href="/login" class="header-link">Make a free station</a>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="station-grid">
+    <% stations.forEach(station => { %>
+      <div class="station-container">
+        <a href="/<%= station.name %>" class="station-item">
+          <img
+            src="https://img.youtube.com/vi/<%= station.youtubeUrl.split('v=')[1] %>/0.jpg"
+            alt="<%= station.name %> thumbnail"
+            class="station-thumbnail"
+          />
+        </a>
+        <div class="station-info">
+          <div class="station-name"><%= station.name %></div>
+          <div class="reaction-container">
+            <div class="reaction" data-station="<%= station.name %>" data-type="likes">
+              ❤️ <span class="count"><%= station.likes %></span>
+            </div>
+            <div class="reaction" data-station="<%= station.name %>" data-type="flags">
+              🚩 <span class="count"><%= station.flags %></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+  <script>
+    // Load reactions from localStorage
+    const reactions = JSON.parse(localStorage.getItem("reactions") || "{}");
+
+    // Highlight reactions from localStorage on page load
+    document.querySelectorAll(".reaction").forEach((reaction) => {
+      const stationName = reaction.getAttribute("data-station");
+      const reactionType = reaction.getAttribute("data-type");
+
+      // Check if this station and reaction type are stored as "selected" in localStorage
+      if (reactions[stationName] && reactions[stationName].includes(reactionType)) {
+        reaction.classList.add("selected");
+      }
+    });
+
+    // Add event listeners for reactions
+    document.querySelectorAll(".reaction").forEach((reaction) => {
+      reaction.addEventListener("click", async () => {
+        const stationName = reaction.getAttribute("data-station");
+        const reactionType = reaction.getAttribute("data-type");
+        const countSpan = reaction.querySelector(".count");
+
+        const isSelected = reaction.classList.toggle("selected"); // Toggle selected
+        const increment = isSelected; // True if just selected, false if unselected
+
+        // Update localStorage for the selected state
+        if (!reactions[stationName]) reactions[stationName] = [];
+        if (isSelected) {
+          reactions[stationName].push(reactionType);
+        } else {
+          reactions[stationName] = reactions[stationName].filter((type) => type !== reactionType);
+        }
+        localStorage.setItem("reactions", JSON.stringify(reactions));
+
+        try {
+          // Send reaction update to the server
+          const response = await fetch(`/station/${stationName}/react`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reactionType, increment }),
+          });
+
+          const data = await response.json();
+          countSpan.textContent = reactionType === "likes" ? data.likes : data.flags;
+        } catch (error) {
+          console.error("Failed to update reaction:", error);
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>

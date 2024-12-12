@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What The Radio?</title>
+  <link rel="icon" href="https://d1xwysupjizl5b.cloudfront.net/faviconlogo.png" type="image/png">
+  <style>@import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&display=swap');
+
+    * {
+      border: 0;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      background-color: #000; 
+    }
+    
+    :root {
+      --hue: 223;
+      --hue-error: 3;
+      --bg: hsl(var(--hue), 10%, 90%);
+      --bg-t: hsla(var(--hue), 10%, 90%, 0);
+      --fg: hsl(var(--hue), 10%, 10%);
+      --primary: hsl(var(--hue), 90%, 50%);
+      --error: hsl(var(--hue-error), 90%, 40%);
+      --focus: hsl(var(--hue), 90%, 50%);
+      --focus-t: hsla(var(--hue), 90%, 50%, 0);
+      --trans-dur: 0.3s;
+      --trans-timing: cubic-bezier(0.65, 0, 0.35, 1);
+      font-size: calc(14px + (28 - 14) * (100vw - 280px) / (3840 - 280));
+    }
+    a {
+      border-radius: 0.25em;
+      box-shadow: 0 0 0 0.1875em var(--focus-t);
+      color: var(--primary);
+      outline: transparent;
+      transition: box-shadow var(--trans-dur), color var(--trans-dur);
+    }
+    a:focus-visible {
+      box-shadow: 0 0 0 0.1875em var(--focus);
+    }
+    a:hover {
+      text-decoration: none;
+    }
+    a:visited {
+      color: hsl(var(--hue), 90%, 30%);
+    }
+    body,
+    button,
+    input {
+      color: var(--fg);
+      font: 1em/1.5 "DM Sans", sans-serif;
+    }
+    body {
+      background-color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      max-height:100%;
+      transition: background-color var(--trans-dur), color var(--trans-dur);
+      margin: 0;
+      overflow: hidden;
+    }
+    
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .login {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 800px;
+      margin: auto;
+      background-color: #000;
+      padding-bottom: 1em; 
+    }
+    .login h1 {
+      font-size: 2em;
+      margin: 0 0 1.5rem;
+      text-align: center;
+    }
+    .login__account {
+      display: flex;
+      justify-content: center;
+      height: 1.5em;
+      margin-bottom: 1.5em;
+    }
+    .login__avatar {
+      display: block;
+      flex-shrink: 0;
+      margin-inline-end: 0.5em;
+      width: 1.5em;
+      height: 1.5em;
+    }
+    
+    .login__logo img {
+      max-width: 250px; 
+      height: auto; 
+      display: block;
+      margin: auto;
+    }
+    
+    .login__btn,
+    .login__eye,
+    .login__input-textbox,
+    .login__segmented-btn,
+    .login__social-btn {
+      background-color: transparent;
+      -webkit-appearance: none;
+      appearance: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .login__btn,
+    .login__eye {
+      cursor: pointer;
+      display: block;
+      outline: transparent;
+      transition: background-color var(--trans-dur), box-shadow var(--trans-dur), color var(--trans-dur), opacity var(--trans-dur);
+    }
+    .login__btn {
+      background-color: hsl(0, 0%, 100%);
+      border-radius: 0.75em;
+      box-shadow: 0 0 0 0.125em var(--bg-t), 0 0 0 0.3125em var(--focus-t);
+      color: #000;
+      margin-bottom: 1.5em;
+      padding: 0.75em 0.5em;
+      width: 100%;
+    }
+    .login__btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+    .login__btn:not(:disabled):focus-visible {
+      box-shadow: 0 0 0 0.125em var(--bg), 0 0 0 0.3125em var(--focus);
+    }
+    .login__btn:not(:disabled):hover {
+      background-color: hsl(0, 0%, 75%);
+    }
+    .login__btn--secondary {
+      background-color: transparent;
+      box-shadow: 0 0 0 0.125em hsl(var(--hue), 10%, 80%) inset, 0 0 0 0.125em var(--bg-t), 0 0 0 0.3125em var(--focus-t);
+      color: var(--fg);
+    }
+    .login__btn--secondary:not(:disabled):focus-visible {
+      box-shadow: 0 0 0 0.125em hsl(var(--hue), 10%, 80%) inset, 0 0 0 0.125em var(--bg), 0 0 0 0.3125em var(--focus);
+    }
+    .login__btn--secondary:not(:disabled):hover {
+      background-color: hsl(var(--hue), 10%, 90%);
+    }
+    .login__column {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 800px;
+      padding: 2em;
+      flex-grow: 1; 
+      overflow-y: auto;
+    }
+    .login__column--bg {
+      display: none; 
+    }
+    .login__email {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .login__error {
+      color: var(--error);
+      display: flex;
+      align-items: flex-start;
+      font-size: 0.75em;
+      line-height: 1.333;
+      padding-top: 0.25rem;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      left: 0;
+      transition: color var(--trans-dur), opacity var(--trans-dur);
+    }
+    .login__error-icon {
+      display: none;
+      margin-inline-end: 0.25rem;
+      width: 1rem;
+      height: 1rem;
+    }
+    .login__eye {
+      background-color: transparent;
+      border-radius: 0.375em;
+      box-shadow: 0 0 0 0.1875em var(--focus-t);
+      position: absolute;
+      right: 0.5em;
+      bottom: 0.5em;
+      width: 2.5em;
+      height: 2.5em;
+    }
+    .login__eye:focus-visible {
+      box-shadow: 0 0 0 0.1875em var(--focus);
+    }
+    .login__eye:hover {
+      background-color: hsl(var(--hue), 10%, 90%);
+    }
+    [dir="rtl"] .login__eye {
+      right: auto;
+      left: 0.5em;
+    }
+    .login__eye-icon {
+      flex-shrink: 0;
+      pointer-events: none;
+      margin: auto;
+      width: 1.5em;
+      height: auto;
+    }
+    .login__eye-icon:not([display="none"]) {
+      display: block;
+    }
+    .login__field {
+      position: relative;
+      margin-bottom: 2.25em;
+      transition: opacity var(--trans-dur);
+    }
+    .login__field-check {
+      display: block;
+      pointer-events: none;
+      position: absolute;
+      opacity: 0;
+      top: 1em;
+      right: 1em;
+      width: 1.5em;
+      height: 1.5em;
+      transition: opacity var(--trans-dur);
+    }
+    [dir="rtl"] .login__field-check {
+      right: auto;
+      left: 1em;
+    }
+    .login__footer,
+    .login__form,
+    .login__header {
+      width: 100%;
+    }
+    .login__footer-nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      font-size: 0.75em;
+      line-height: 1.333;
+      list-style: none;
+    }
+    .login__forgot {
+      display: block;
+      font-size: 0.75em;
+      line-height: 1.333;
+      margin-bottom: 0.5rem;
+      margin-inline-start: auto;
+      width: max-content;
+    }
+    .login__form {
+      flex-shrink: 0;
+      margin: 1.5em 0; 
+      margin-bottom: 0;
+      height: min-content;
+    }
+    .login__form-page {
+      flex: 0 0 100%;
+      padding: 0 0.5em;
+      width: 100%;
+      transition: transform var(--trans-dur) var(--trans-timing), visibility var(--trans-dur) steps(1, jump-both);
+    }
+    .login__form-page + .login__form-page {
+      visibility: hidden;
+    }
+    .login__form-pages {
+      display: flex;
+      overflow: hidden;
+    }
+    .login__form-pages[data-stage="1"] .login__form-page {
+      transform: translateX(-100%);
+    }
+    [dir="rtl"] .login__form-pages[data-stage="1"] .login__form-page {
+      transform: translateX(100%);
+    }
+    .login__form-pages[data-stage="1"] .login__form-page:first-child {
+      visibility: hidden;
+    }
+    .login__form-pages[data-stage="1"] .login__form-page:nth-child(2) {
+      visibility: visible;
+    }
+    .login__header {
+      padding: .5em 0;
+    }
+    .login__input-textbox {
+      border-radius: 0.75em;
+      box-shadow: 0 0 0 0.125em hsl(var(--hue), 10%, 80%) inset;
+      outline: transparent;
+      padding: 1.5em 1em 0.5em 1em;
+      padding-inline-end: 3.5em;
+      width: 100%;
+      transition: box-shadow var(--trans-dur), color var(--trans-dur);
+    }
+    .login__input-textbox:not(:disabled):focus-visible {
+      box-shadow: 0 0 0 0.1875em var(--focus) inset;
+    }
+    .login__input-textbox[aria-invalid="true"] {
+      box-shadow: 0 0 0 0.125em var(--error) inset;
+    }
+    .login__input-textbox[aria-invalid="true"]:not(:disabled):focus-visible {
+      box-shadow: 0 0 0 0.1875em var(--error) inset;
+    }
+    .login__input-textbox[aria-invalid="true"] ~ .login__error .login__error-icon {
+      display: block;
+    }
+    .login__field:has(.login__input-textbox:disabled) {
+      opacity: 0.5;
+    }
+    .login__label {
+      color: hsl(var(--hue), 10%, 30%);
+      cursor: text;
+      display: flex;
+      position: absolute;
+      bottom: 1em;
+      left: 1em;
+      transform-origin: 0 0;
+      transition: color var(--trans-dur), transform var(--trans-dur) var(--trans-timing);
+    }
+    [dir="rtl"] .login__label {
+      right: 1em;
+      left: auto;
+      transform-origin: 100% 0;
+    }
+    .login__input-textbox + .login__label {
+      pointer-events: none;
+    }
+    .login__input-textbox:focus-visible + .login__label {
+      color: var(--focus);
+    }
+    .login__input-textbox[aria-invalid="true"]:focus-visible + .login__label {
+      color: var(--error);
+    }
+    .login__input-textbox:focus-visible + .login__label,
+    .login__input-textbox:not(:placeholder-shown) + .login__label {
+      transform: translateY(-25%) scale(0.75);
+    }
+    .login__input-textbox:not(:placeholder-shown):disabled ~ .login__field-check,
+    .login__input-textbox:not(:placeholder-shown):valid ~ .login__field-check {
+      opacity: 1;
+    }
+    .login__logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5em;
+      line-height: 1;
+      margin: auto;
+      margin-top:10px;
+      width: 9rem;
+    }
+    .login__or {
+      color: hsl(var(--hue), 10%, 40%);
+      display: flex;
+      align-items: center;
+      font-size: 0.75em;
+      line-height: 2;
+      margin-bottom: 1.5em;
+      text-align: center;
+      transition: color var(--trans-dur);
+    }
+    .login__or:before,
+    .login__or:after {
+      background-color: hsl(var(--hue), 10%, 70%);
+      content: "";
+      display: block;
+      flex: 1;
+      height: 1px;
+      transition: background-color var(--trans-dur);
+    }
+    .login__or:before {
+      margin-inline-end: 0.75em;
+    }
+    .login__or:after {
+      margin-inline-start: 0.75em;
+    }
+    .login__segmented {
+      background-color: hsl(var(--hue), 10%, 90%);
+      border-radius: 0.75em;
+      display: flex;
+      margin-bottom: 1.5em;
+      min-height: 3em;
+      position: relative;
+      transition: background-color var(--trans-dur), box-shadow var(--trans-dur), color var(--trans-dur), opacity var(--trans-dur);
+    }
+    .login__segmented-btn {
+      border-radius: 0.875em;
+      box-shadow: 0 0 0 0.1875em var(--focus-t) inset;
+      color: hsl(var(--hue), 10%, 40%);
+      cursor: pointer;
+      outline: transparent;
+      padding: 0.75em;
+      width: 100%;
+      z-index: 1;
+      transition: background-color var(--trans-dur), box-shadow var(--trans-dur), color var(--trans-dur), opacity var(--trans-dur);
+    }
+    .login__segmented-btn:focus-visible {
+      box-shadow: 0 0 0 0.1875em var(--focus) inset;
+    }
+    .login__segmented-btn[aria-selected="true"] {
+      color: hsl(var(--hue), 10%, 10%);
+    }
+    .login__segmented-focus {
+      background-color: hsl(0, 0%, 100%);
+      border-radius: 0.625em;
+      pointer-events: none;
+      position: absolute;
+      top: 0.25em;
+      bottom: 0.25em;
+      left: 0.25em;
+      width: calc(50% - 0.5em);
+      transition: background-color var(--trans-dur), opacity var(--trans-dur), transform var(--trans-dur) var(--trans-timing);
+    }
+    [dir="rtl"] .login__segmented-focus {
+      right: 0.25em;
+      left: auto;
+    }
+    .login__segmented-btn:disabled,
+    .login__segmented-btn:disabled ~ .login__segmented-focus {
+      opacity: 0.5;
+    }
+    .login__segmented-btn[aria-selected="true"]:nth-child(2) ~ .login__segmented-focus {
+      transform: translateX(calc(100% + 0.5em));
+    }
+    [dir="rtl"] .login__segmented-btn[aria-selected="true"]:nth-child(2) ~ .login__segmented-focus {
+      transform: translateX(calc(-100% - 0.5em));
+    }
+    .login__social {
+      display: flex;
+      justify-content: center;
+      gap: 1.5em;
+      margin-bottom: 1.5em;
+    }
+    .login__social-btn {
+      border-radius: 50%;
+      box-shadow: 0 0 0 0.1875em var(--focus-t);
+      cursor: pointer;
+      display: flex;
+      outline: transparent;
+      width: 3em;
+      height: 3em;
+      transition: background-color var(--trans-dur), box-shadow var(--trans-dur), color var(--trans-dur);
+    }
+    .login__social-btn:focus-visible {
+      box-shadow: 0 0 0 0.1875em var(--focus);
+    }
+    .login__social-btn--apple {
+      background-color: hsl(0, 0%, 0%);
+      color: hsl(0, 0%, 100%);
+    }
+    .login__social-btn--apple:hover {
+      background-color: hsl(0, 0%, 20%);
+    }
+    .login__social-btn--fb {
+      background-color: hsl(218, 89%, 57%);
+    }
+    .login__social-btn--fb:hover {
+      background-color: hsl(218, 89%, 37%);
+    }
+    .login__social-btn--google {
+      box-shadow: 0 0 0 0.125em hsl(var(--hue), 10%, 70%) inset, 0 0 0 0.1875em var(--focus-t);
+    }
+    .login__social-btn--google:focus-visible {
+      box-shadow: 0 0 0 0.125em hsl(var(--hue), 10%, 70%) inset, 0 0 0 0.1875em var(--focus);
+    }
+    .login__social-btn--google:hover {
+      background-color: hsl(0, 0%, 80%);
+    }
+    .login__social-icon {
+      margin: auto;
+      width: 1em;
+      height: auto;
+    }
+    
+    #station-text {
+      text-align: center;
+      color: white;
+      font-family: "Afacad Flux", sans-serif;
+      font-weight: 300;
+      font-size: 1.5em;
+      margin-top: 0em;
+      margin-bottom: 4px;
+      overflow-wrap: break-word; /* Ensures text wraps within container */
+    }
+
+    /* Marquee Container */
+    .marquee-container {
+      overflow: hidden;
+      background-color: #000;
+      text-align: center;
+      max-width: 600px; 
+      width: 100%;
+      white-space: nowrap;
+      position: relative;
+      mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+      -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+      margin-bottom:1px;
+    }
+    
+    .marquee {
+      display: inline-block;
+      animation: marquee 120s linear infinite;
+      white-space: nowrap;
+      font-family: "Afacad Flux", sans-serif;
+      font-optical-sizing: auto;
+      font-weight: 300;
+      font-style: normal;
+      font-size: 1.5em;
+      font-variation-settings:
+        "slnt" 0;
+    }
+    
+    .marquee span {
+      display: inline-block;
+      margin-right: 8em; 
+    }
+
+    .marquee a {
+      text-decoration: none;
+    }
+    
+    @keyframes marquee {
+      0% {
+        transform: translateX(10%);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+    
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: hsl(var(--hue), 10%, 10%);
+        --bg-t: hsla(var(--hue), 10%, 10%, 0);
+        --fg: hsl(var(--hue), 10%, 90%);
+        --error: hsl(var(--hue-error), 90%, 70%);
+        --focus: hsl(var(--hue), 90%, 70%);
+        --focus-t: hsla(var(--hue), 90%, 70%, 0);
+      }
+      a {
+        color: hsl(var(--hue), 90%, 70%);
+      }
+      a:visited {
+        color: hsl(var(--hue), 90%, 90%);
+      }
+      .login__btn--secondary {
+        box-shadow: 0 0 0 0.125em hsl(var(--hue), 10%, 30%) inset, 0 0 0 0.125em var(--bg-t), 0 0 0 0.3125em var(--focus-t);
+      }
+      .login__btn--secondary:not(:disabled):focus-visible {
+        box-shadow: 0 0 0 0.125em hsl(var(--hue), 10%, 30%) inset, 0 0 0 0.125em var(--bg), 0 0 0 0.3125em var(--focus);
+      }
+      .login__btn--secondary:not(:disabled):hover {
+        background-color: hsl(var(--hue), 10%, 20%);
+      }
+      .login__column {
+          background-color: #000; 
+      }
+      .login__eye:hover {
+        background-color: hsl(var(--hue), 10%, 20%);
+      }
+      .login__field {
+        position: relative;
+      }
+      .login__input-textbox {
+        box-shadow: 0 0 0 0.125em hsl(var(--hue), 10%, 30%) inset;
+      }
+      .login__label {
+        color: hsl(var(--hue), 10%, 70%);
+      }
+      .login__or {
+        color: hsl(var(--hue), 10%, 60%);
+      }
+      .login__or:before,
+      .login__or:after {
+        background-color: hsl(var(--hue), 10%, 30%);
+      }
+      .login__segmented {
+        background-color: hsl(var(--hue), 10%, 20%);
+      }
+      .login__segmented-btn {
+        color: hsl(var(--hue), 10%, 60%);
+      }
+      .login__social-btn--apple {
+        background-color: hsl(0, 0%, 100%);
+        color: hsl(0, 0%, 0%);
+      }
+      .login__social-btn--apple:hover {
+        background-color: hsl(0, 0%, 80%);
+      }
+      .login__social-btn--google {
+        box-shadow: 0 0 0 0.125em hsl(var(--hue), 10%, 30%) inset, 0 0 0 0.1875em var(--focus-t);
+      }
+      .login__social-btn--google:focus-visible {
+        box-shadow: 0 0 0 0.125em hsl(var(--hue), 10%, 30%) inset, 0 0 0 0.1875em var(--focus);
+      }
+      .login__social-btn--google:hover {
+        background-color: hsl(0, 0%, 20%);
+      }
+    }
+    @media (min-width: 768px) {
+      .login__column {
+        padding: 1.5em 3em;
+        width: 100%;
+      }
+      .login__column--bg {
+        display: none; 
+      }
+      .login__form {
+        max-width: 32em;
+      }
+    }
+    </style>
+</head>
+<body>
+
+  <svg display="none">
+    <symbol id="avatar" viewbox="0 0 32 32">
+      <g fill="currentColor">
+        <path d="M16,8a5,5,0,1,0,5,5A5,5,0,0,0,16,8Z" />
+        <path d="M16,2A14,14,0,1,0,30,16,14.0158,14.0158,0,0,0,16,2Zm7.9925,22.9258A5.0016,5.0016,0,0,0,19,20H13a5.0016,5.0016,0,0,0-4.9925,4.9258,12,12,0,1,1,15.985,0Z" />
+      </g>
+    </symbol>
+    <symbol id="check" viewbox="0 0 24 24">
+      <path fill-rule="evenodd" fill="#27bc89" d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM16.0303 8.96967C16.3232 9.26256 16.3232 9.73744 16.0303 10.0303L11.0303 15.0303C10.7374 15.3232 10.2626 15.3232 9.96967 15.0303L7.96967 13.0303C7.67678 12.7374 7.67678 12.2626 7.96967 11.9697C8.26256 11.6768 8.73744 11.6768 9.03033 11.9697L10.5 13.4393L12.7348 11.2045L14.9697 8.96967C15.2626 8.67678 15.7374 8.67678 16.0303 8.96967Z" />
+    </symbol>
+    <symbol id="email" viewbox="0 0 20 20">
+      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="2" rx="4" ry="4" width="18" height="16" />
+        <polyline points="5 7,10 11,15 7" />
+      </g>
+    </symbol>
+    <symbol id="eye-off" viewbox="0 0 24 24">
+      <path fill="currentColor" d="M6.30147 15.5771C4.77832 14.2684 3.6904 12.7726 3.18002 12C3.6904 11.2274 4.77832 9.73158 6.30147 8.42294C7.87402 7.07185 9.81574 6 12 6C14.1843 6 16.1261 7.07185 17.6986 8.42294C19.2218 9.73158 20.3097 11.2274 20.8201 12C20.3097 12.7726 19.2218 14.2684 17.6986 15.5771C16.1261 16.9282 14.1843 18 12 18C9.81574 18 7.87402 16.9282 6.30147 15.5771ZM12 4C9.14754 4 6.75717 5.39462 4.99812 6.90595C3.23268 8.42276 2.00757 10.1376 1.46387 10.9698C1.05306 11.5985 1.05306 12.4015 1.46387 13.0302C2.00757 13.8624 3.23268 15.5772 4.99812 17.0941C6.75717 18.6054 9.14754 20 12 20C14.8525 20 17.2429 18.6054 19.002 17.0941C20.7674 15.5772 21.9925 13.8624 22.5362 13.0302C22.947 12.4015 22.947 11.5985 22.5362 10.9698C21.9925 10.1376 20.7674 8.42276 19.002 6.90595C17.2429 5.39462 14.8525 4 12 4ZM10 12C10 10.8954 10.8955 10 12 10C13.1046 10 14 10.8954 14 12C14 13.1046 13.1046 14 12 14C10.8955 14 10 13.1046 10 12ZM12 8C9.7909 8 8.00004 9.79086 8.00004 12C8.00004 14.2091 9.7909 16 12 16C14.2092 16 16 14.2091 16 12C16 9.79086 14.2092 8 12 8Z" />
+    </symbol>
+    <symbol id="eye-on" viewbox="0 0 24 24">
+      <path fill="currentColor" d="M19.7071 5.70711C20.0976 5.31658 20.0976 4.68342 19.7071 4.29289C19.3166 3.90237 18.6834 3.90237 18.2929 4.29289L14.032 8.55382C13.4365 8.20193 12.7418 8 12 8C9.79086 8 8 9.79086 8 12C8 12.7418 8.20193 13.4365 8.55382 14.032L4.29289 18.2929C3.90237 18.6834 3.90237 19.3166 4.29289 19.7071C4.68342 20.0976 5.31658 20.0976 5.70711 19.7071L9.96803 15.4462C10.5635 15.7981 11.2582 16 12 16C14.2091 16 16 14.2091 16 12C16 11.2582 15.7981 10.5635 15.4462 9.96803L19.7071 5.70711ZM12.518 10.0677C12.3528 10.0236 12.1792 10 12 10C10.8954 10 10 10.8954 10 12C10 12.1792 10.0236 12.3528 10.0677 12.518L12.518 10.0677ZM11.482 13.9323L13.9323 11.482C13.9764 11.6472 14 11.8208 14 12C14 13.1046 13.1046 14 12 14C11.8208 14 11.6472 13.9764 11.482 13.9323ZM15.7651 4.8207C14.6287 4.32049 13.3675 4 12 4C9.14754 4 6.75717 5.39462 4.99812 6.90595C3.23268 8.42276 2.00757 10.1376 1.46387 10.9698C1.05306 11.5985 1.05306 12.4015 1.46387 13.0302C1.92276 13.7326 2.86706 15.0637 4.21194 16.3739L5.62626 14.9596C4.4555 13.8229 3.61144 12.6531 3.18002 12C3.6904 11.2274 4.77832 9.73158 6.30147 8.42294C7.87402 7.07185 9.81574 6 12 6C12.7719 6 13.5135 6.13385 14.2193 6.36658L15.7651 4.8207ZM12 18C11.2282 18 10.4866 17.8661 9.78083 17.6334L8.23496 19.1793C9.37136 19.6795 10.6326 20 12 20C14.8525 20 17.2429 18.6054 19.002 17.0941C20.7674 15.5772 21.9925 13.8624 22.5362 13.0302C22.947 12.4015 22.947 11.5985 22.5362 10.9698C22.0773 10.2674 21.133 8.93627 19.7881 7.62611L18.3738 9.04043C19.5446 10.1771 20.3887 11.3469 20.8201 12C20.3097 12.7726 19.2218 14.2684 17.6986 15.5771C16.1261 16.9282 14.1843 18 12 18Z" />
+    </symbol>
+    <symbol id="google" viewbox="0 0 16 16">
+      <path fill="#4285F4" d="M14.9 8.161c0-.476-.039-.954-.121-1.422h-6.64v2.695h3.802a3.24 3.24 0 01-1.407 2.127v1.75h2.269c1.332-1.22 2.097-3.02 2.097-5.15z"/>
+      <path fill="#34A853" d="M8.14 15c1.898 0 3.499-.62 4.665-1.69l-2.268-1.749c-.631.427-1.446.669-2.395.669-1.836 0-3.393-1.232-3.952-2.888H1.85v1.803A7.044 7.044 0 008.14 15z"/>
+      <path fill="#FBBC04" d="M4.187 9.342a4.17 4.17 0 010-2.68V4.859H1.849a6.97 6.97 0 000 6.286l2.338-1.803z"/>
+      <path fill="#EA4335" d="M8.14 3.77a3.837 3.837 0 012.7 1.05l2.01-1.999a6.786 6.786 0 00-4.71-1.82 7.042 7.042 0 00-6.29 3.858L4.186 6.66c.556-1.658 2.116-2.89 3.952-2.89z"/>
+    </symbol>
+    <symbol id="logo" viewbox="0 0 32 32">
+      <polygon fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="16 4,2 28,30 28" />
+    </symbol>
+    <symbol id="warning" viewbox="0 0 24 24">
+      <path fill="currentColor" d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm0,16a1,1,0,1,1,1-1A1,1,0,0,1,12,18Zm1-5a1,1,0,0,1-2,0V7a1,1,0,0,1,2,0Z" />
+    </symbol>
+  </svg>
+
+
+  <form class="login" method="post" action="">
+    <div class="login__column">
+      <div class="login__header">
+        <div class="login__logo">
+          <a href="/">
+          <img src="https://d1xwysupjizl5b.cloudfront.net/loginlogo.png" alt="Logo" />
+          </a>
+        </div>
+        <p id="station-text">The easiest way to make a free internet radio station</p>
+      </div>
+      <div class="marquee-container">
+        <div class="marquee">
+          <span><a href="/">Discover stations🔭</a></span>
+          <span><a href="/">Discover stations🔭</a></span>
+          <span><a href="/">Discover stations🔭</a></span>
+          <span><a href="/">Discover stations🔭</a></span>
+          <span><a href="/">Discover stations🔭</a></span>
+          <span><a href="/">Discover stations🔭</a></span>
+          <span><a href="/">Why are you still looking at the login screen🤔</a></span>
+        </div>
+      </div>
+      <div class="login__form">
+        <div class="login__form-pages" data-stage="0">
+          <div class="login__form-page">
+            <div class="login__segmented">
+              <button class="login__segmented-btn" type="button" role="tab" aria-selected="true" data-action="access" data-access="0">Login</button>
+              <button class="login__segmented-btn" type="button" role="tab" aria-selected="false" data-action="access" data-access="1">Sign Up</button>
+              <div class="login__segmented-focus"></div>
+            </div>
+            <div class="login__field" id="user-email-field">
+              <input class="login__input-textbox" id="user-email" type="email" name="email" autocomplete="off" pattern="^[a-zA-Z0-9.!#$%&'*+\/=?^_`\{\|\}]+@[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$" placeholder=" ">
+              <label class="login__label" for="user-email">Email</label>
+              <svg class="login__field-check" width="16px" height="16px" aria-hidden="true">
+                <use href="#check" />
+              </svg>
+              <div class="login__error">
+                <svg class="login__error-icon" width="12px" height="12px" aria-hidden="true">
+                  <use href="#warning" />
+                </svg>
+                <span id="email-error" aria-live="assertive"></span>
+              </div>
+            </div>
+            <button class="login__btn" type="submit" data-action="continue">Continue</button>
+            
+          </div>
+          <div class="login__form-page">
+            <div class="login__account">
+              <svg class="login__avatar" width="16px" height="16px" aria-hidden="true">
+                <use href="#avatar" />
+              </svg>
+              <span class="login__email" data-email></span>
+            </div>
+            <div class="login__field" id="user-password-field">
+              <a class="login__forgot" id="forgot-password">Forgot password?</a>
+              <input class="login__input-textbox" id="user-password" type="password" name="password" autocomplete="off" placeholder=" ">
+              <label class="login__label" for="user-password">Password</label>
+              <div class="login__error">
+                <svg class="login__error-icon" width="12px" height="12px" aria-hidden="true">
+                  <use href="#warning" />
+                </svg>
+                <span id="password-error" aria-live="assertive"></span>
+              </div>
+              <button class="login__eye" type="button" title="Show password" data-action="password">
+                <svg class="login__eye-icon" width="24px" height="24px" data-icon="eye-off" aria-hidden="true">
+                  <use href="#eye-off" />
+                </svg>
+                <svg class="login__eye-icon" width="24px" height="24px" data-icon="eye-on" aria-hidden="true" display="none">
+                  <use href="#eye-on" />
+                </svg>
+              </button>
+            </div>
+            <button class="login__btn" type="submit" data-action="login">Login</button>
+            <button class="login__btn login__btn--secondary" type="button" data-action="back">Back</button>
+          </div>
+        </div>
+      </div>
+      <div class="login__footer">
+        <ul class="login__footer-nav">
+          <li><a href="/terms">Terms of Use</a></li>
+          <li><a href="/privacy">Privacy Policy</a></li>
+          <li><a href="#" id="contact-link">Contact Us</a></li>
+        </ul>
+      </div>
+    </div>
+  </form>
+
+
+  <script>window.addEventListener("DOMContentLoaded", () => {
+    const login = new LoginForm("form");
+  });
+
+  document.getElementById("contact-link").addEventListener("click", function(event) {
+  event.preventDefault();
+  alert("Please contact us at disagreeonline@gmail.com (we would love your feedback)");
+});
+  document.getElementById("forgot-password").addEventListener("click", function (event) {
+  event.preventDefault(); // Prevent the default action of the link
+  alert("To reset your password please email disagreeonline@gmail.com with your desired new password :-)");
+});
+  class LoginForm {
+    constructor(el) {
+      this.el = document.querySelector(el);
+      this.loginTimeout = 0;
+      this._accessMode = AccessMode.SignIn;
+      this._email = "";
+      this._password = "";
+      this._passwordShow = false;
+      this._hasErrors = false;
+      this._loginStage = 0;
+      this._loginWorking = false;
+      this.termsAgreed = false;
+  
+      this.el?.addEventListener("click", this.clickAction.bind(this));
+      this.el?.addEventListener("input", this.emailValidate.bind(this));
+      this.el?.addEventListener("submit", this.login.bind(this));
+      this.el?.reset();
+    }
+  
+    get accessMode() {
+      return this._accessMode;
+    }
+  
+    set accessMode(value) {
+      const attr = "data-access";
+      const current = this.el?.querySelector(`[${attr}="${this.accessMode}"]`);
+      const next = this.el?.querySelector(`[${attr}="${value}"]`);
+      if (current) {
+        current.ariaSelected = "false";
+      }
+      if (next) {
+        next.ariaSelected = "true";
+      }
+      this._accessMode = value;
+
+      if (value === AccessMode.SignUp) {
+      this.insertConfirmPassword();
+      this.insertTermsCheckbox();
+    } else {
+        this.removeConfirmPassword();
+        this.removeTermsCheckbox();
+      }
+    }
+  
+    get email() {
+      return this._email;
+    }
+  
+    set email(value) {
+      const emailEl = this.el?.querySelector("[data-email]");
+      if (emailEl) {
+        emailEl.textContent = value;
+      }
+      this._email = value;
+    }
+  
+    get emailError() {
+      return this.emailValid ? "" : LoginInvalid.Email;
+    }
+  
+    get emailValid() {
+      const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+      return !!this.email.length && emailRegex.test(this.email);
+    }
+  
+    get password() {
+      return this._password;
+    }
+  
+    set password(value) {
+      this._password = value;
+    }
+  
+    get passwordError() {
+      return this.passwordValid ? "" : LoginInvalid.Password;
+    }
+  
+    get passwordValid() {
+      return !!this.password.length;
+    }
+  
+    get passwordShow() {
+      return this._passwordShow;
+    }
+  
+    set passwordShow(value) {
+      this._passwordShow = value;
+      if (this.el?.password?.type) {
+        this.el.password.type = value ? "text" : "password";
+        const stateThen = !value ? PasswordDisplay.On : PasswordDisplay.Off;
+        const stateThenIcon = this.el.querySelector(`[data-icon="eye-${stateThen}"]`);
+        stateThenIcon?.setAttribute("display", "none");
+  
+        const stateNow = value ? PasswordDisplay.On : PasswordDisplay.Off;
+        const stateNowIcon = this.el.querySelector(`[data-icon="eye-${stateNow}"]`);
+        stateNowIcon?.removeAttribute("display");
+  
+        const button = this.el.querySelector(`[data-action="password"]`);
+        const buttonTitle = value ? PasswordDisplayLabel.Hide : PasswordDisplayLabel.Show;
+        button?.setAttribute("title", buttonTitle);
+      }
+    }
+  
+    get hasErrors() {
+      return this._hasErrors;
+    }
+  
+    set hasErrors(value) {
+      this._hasErrors = value;
+    }
+  
+    get loginStage() {
+      return this._loginStage;
+    }
+  
+    set loginStage(value) {
+      const pages = this.el?.querySelector("[data-stage]");
+      pages.setAttribute("data-stage", `${value}`);
+      this._loginStage = value;
+    }
+  
+    get loginWorking() {
+      return this._loginWorking;
+    }
+  
+   set loginWorking(value) {
+    const segments = Array.from(this.el?.querySelectorAll("[data-access]") || []);
+    segments.forEach(segment => {
+      segment.disabled = value;
+    });
+    if (this.el?.email) this.el.email.disabled = value;
+    if (this.el?.password) this.el.password.disabled = value;
+  
+    const actionButtons = [
+      {
+        action: "continue",
+        defaultText: LoginState.Continue,
+        workingText: LoginState.ContinueWorking
+      },
+      {
+        action: "login",
+        // Set default and working text dynamically based on accessMode
+        defaultText: this.accessMode === AccessMode.SignIn ? LoginState.Login : "Sign Up",
+        workingText: this.accessMode === AccessMode.SignIn ? LoginState.LoginWorking : "Signing up…"
+      },
+      {
+        action: "back"
+      }
+    ];
+  
+    actionButtons.forEach(button => {
+      const buttonEl = this.el?.querySelector(`[data-action="${button.action}"]`);
+      if (buttonEl) {
+        // Update button text based on working state
+        if (value && button.workingText) {
+          buttonEl.textContent = button.workingText;
+        } else if (button.defaultText) {
+          buttonEl.textContent = button.defaultText;
+        }
+        buttonEl.disabled = value;
+      }
+    });
+  
+    this._loginWorking = value;
+  }
+  
+  insertConfirmPassword() {
+    const passwordField = document.getElementById('user-password-field');
+    if (!document.getElementById('user-confirm-password')) {
+      console.log("Inserting confirm password field");
+      const confirmPasswordField = document.createElement('div');
+      confirmPasswordField.classList.add('login__field');
+      passwordField.style.marginBottom = '10px'; // Adjust this value to reduce the space
+      confirmPasswordField.style.marginBottom = '10px'; // Adjust the margin to reduce space
+      confirmPasswordField.innerHTML = `
+        <input class="login__input-textbox" id="user-confirm-password" type="password" name="confirm-password" autocomplete="off" placeholder=" ">
+        <label class="login__label" for="user-confirm-password">Confirm Password</label>
+        <div class="login__error">
+          <svg class="login__error-icon" width="12px" height="12px" aria-hidden="true">
+            <use href="#warning" />
+          </svg>
+          <span id="confirm-password-error" aria-live="assertive"></span>
+        </div>`;
+      passwordField.insertAdjacentElement('afterend', confirmPasswordField);
+    }
+  }
+
+  removeConfirmPassword() {
+    const confirmPasswordField = document.getElementById('user-confirm-password')?.closest('.login__field');
+    const passwordField = document.getElementById('user-password-field');
+    if (confirmPasswordField) {
+      confirmPasswordField.remove();
+    }
+    passwordField.style.marginBottom = '2.25em'; // Reset to original margin
+  }
+
+  insertTermsCheckbox() {
+    console.log("inserting terms checkbox");
+    const emailField = document.getElementById('user-email-field'); // Select the email input field wrapper
+    if (!document.getElementById('terms-checkbox')) {
+      // Create checkbox container
+      const termsField = document.createElement('div');
+      termsField.classList.add('login__field');
+      termsField.style.marginTop = '2px'; // Optional styling for spacing
+      termsField.style.marginBottom = '25px'; // Optional styling for spacing
+      termsField.innerHTML = `
+        <input type="checkbox" id="terms-checkbox" name="terms">
+        <label for="terms-checkbox">I have read and agree to the <a href="/terms" target="_blank">Terms of Use</a> and <a href="/privacy" target="_blank">Privacy Policy</a>.</label>
+        <div class="login__error" id="terms-error" style="display:none;">
+          <span>You must agree to the Terms of Use and Privacy Policy to continue.</span>
+        </div>`;
+
+      // Adjust margin-bottom of the email field
+      emailField.style.marginBottom = '10px';
+
+      // Insert the terms field after the email field
+      emailField.insertAdjacentElement('afterend', termsField);
+    }
+}
+
+removeTermsCheckbox() {
+    console.log("removing terms checkbox");
+    const termsField = document.getElementById('terms-checkbox')?.closest('.login__field');
+    const emailField = document.getElementById('user-email-field'); // Select the email input field wrapper
+    if (termsField) {
+      termsField.remove();
+    }
+    // Revert margin-bottom of the email field to original value (2.25em in this case)
+    emailField.style.marginBottom = '2.25em';
+}
+
+    accessModeToggle() {
+      if (this.loginStage === 0) {
+        this.accessMode = this.accessMode === AccessMode.SignIn ? AccessMode.SignUp : AccessMode.SignIn;
+      }
+    }
+  
+    clickAction(e) {
+      const target = e.target;
+      const action = target.getAttribute("data-action");
+      if (action === "access") {
+        this.accessModeToggle();
+        this.greetingUpdate();
+      } else if (action === "back") {
+        this.passwordGoBack();
+      } else if (action === "password") {
+        this.passwordShowToggle();
+      }
+    }
+  
+    emailValidate(e) {
+      const target = e.target;
+      if (this.hasErrors && target.name === "email" && !target.validity.typeMismatch) {
+        const lastValue = this.email;
+        this.email = this.el?.email?.value;
+        this.errorCheck();
+        this.email = lastValue;
+      }
+    }
+  
+    errorCheck() {
+      if (this.loginStage === 0) {
+        this.errorCheckEmail();
+      } else if (this.loginStage === 1) {
+        this.errorCheckPassword();
+      }
+    }
+  
+    errorCheckEmail() {
+      if (this.el?.email) {
+        this.hasErrors = !this.emailValid;
+        this.el.email.ariaInvalid = this.hasErrors;
+        const emailError = this.el?.querySelector("#email-error");
+        if (emailError) emailError.textContent = this.emailError;
+        if (this.hasErrors) {
+          this.el.email.setAttribute("aria-errormessage", "email-error");
+          return;
+        }
+        this.el.email.removeAttribute("aria-errormessage");
+      }
+    }
+  
+    errorCheckPassword() {
+      if (this.el?.password) {
+        this.hasErrors = !this.passwordValid;
+        this.el.password.ariaInvalid = this.hasErrors;
+        const passwordError = this.el?.querySelector("#password-error");
+        if (passwordError) passwordError.textContent = this.passwordError;
+        if (this.hasErrors) {
+          this.el.password.setAttribute("aria-errormessage", "password-error");
+          return;
+        }
+        this.el.password.removeAttribute("aria-errormessage");
+      }
+    }
+  
+    greetingUpdate() {
+      const greeting = this.el?.querySelector("[data-greeting]");
+      if (greeting) {
+        greeting.textContent = this.accessMode === AccessMode.SignUp ? Greeting.SignUp : Greeting.SignIn;
+      }
+    }
+  
+    login(e) {
+      e.preventDefault();
+      if (this.accessMode === AccessMode.SignUp) {
+      const password = this.el.querySelector('#user-password').value;
+      const confirmPassword = this.el.querySelector('#user-confirm-password')?.value;
+      const confirmPasswordError = this.el.querySelector('#confirm-password-error');
+
+      const termsCheckbox = document.getElementById('terms-checkbox');
+      const termsError = document.getElementById('terms-error');
+      if (termsCheckbox && !termsCheckbox.checked) {
+        termsError.style.display = 'block'; // Show error if not checked
+        return;  // Prevent form submission
+      } else if (termsCheckbox) {
+        termsError.style.display = 'none'; // Hide error if checked
+      }
+
+
+      if (password !== confirmPassword) {
+        confirmPasswordError.textContent = 'Passwords do not match!';
+        this.loginWorking = false;
+        return; // Stop form submission if passwords don't match
+      } else {
+        confirmPasswordError.textContent = ''; // Clear error if they match
+      }
+    }
+      if (!this.loginWorking) {
+        const timeout = 750;
+        this.loginWorking = true;
+        this.loginTimeout = setTimeout(this.loginActions.bind(this), timeout);
+      }
+    }
+  
+    loginActions() {
+  this.loginWorking = false;
+
+  if (this.loginStage === 0) {
+    // First stage: Log email when the email stage is submitted
+    this.email = this.el?.email?.value;
+  } else {
+    // Second stage: Log mode and password when the password stage is submitted
+    const mode = this.accessMode === AccessMode.SignIn ? "Login" : "Sign Up";
+    console.log("Mode:", mode);  // Log whether it's a login or sign up
+    console.log("Email:", this.email);  // Log the email
+    this.password = this.el?.password?.value;
+    console.log("Password:", this.password);  // Log the password
+    
+    // Proceed to sending the data to the server
+    this.errorCheck();
+
+    if (!this.hasErrors) {
+      const requestData = {
+        email: this.email,
+        password: this.password
+      };
+
+      const endpoint = this.accessMode === AccessMode.SignIn ? '/login' : '/signup';
+      
+      // Send POST request
+      fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+      })
+      .then(response => {
+        if (response.ok) {
+          if (this.accessMode === AccessMode.SignIn) {
+            // Redirect to landing page after successful login
+            window.location.href = `/landing/${this.email}`;
+          } else {
+            // On successful signup, display a success message
+            alert("Signup successful! Please check your email for confirmation. (it will come from disagreeonline@gmail.com).");
+            this.loginRevertData(true);
+          }
+        } else {
+          response.json().then(data => {
+            console.error("Error:", data);
+            alert(data.message || "An error occurred. Please try again.");
+            this.loginRevertData(true);  // Immediately go back to the beginning on error
+          });
+        }
+      })
+      .catch(error => {
+        console.error("Request failed:", error);
+        alert("An error occurred. Please check your network and try again.");
+        this.loginRevertData(true);  // Immediately go back to the beginning on error
+      });
+    }
+  }
+  
+  if (this.loginStage === 0) {
+    // Proceed to the password entry stage
+    this.loginStage = 1;
+
+    // Update the button text based on access mode
+    const buttonText = this.accessMode === AccessMode.SignIn ? LoginState.Login : "Sign Up";
+    const loginButton = this.el?.querySelector(`[data-action="login"]`);
+    if (loginButton) {
+      loginButton.textContent = buttonText;
+    }
+    return;
+  }
+}
+
+
+
+    loginRevertData(revertAll = false) {
+      this.loginStage = 0;
+      this.password = "";
+      if (revertAll === true) {
+        this.el?.reset();
+      }
+    }
+  
+    passwordGoBack() {
+      this.loginRevertData();
+      if (this.el?.password) {
+        this.el.password.value = this.password;
+        this.el.password.ariaInvalid = false;
+        this.el.password.removeAttribute("aria-errormessage");
+        const passwordError = this.el?.querySelector("#password-error");
+        if (passwordError) passwordError.textContent = "";
+      }
+    }
+  
+    passwordShowToggle() {
+      this.passwordShow = !this.passwordShow;
+    }
+  }
+  
+  const AccessMode = {
+    SignIn: 0,
+    SignUp: 1
+  };
+  
+  const Greeting = {
+    SignIn: "Welcome Back",
+    SignUp: "Create an Account"
+  };
+  
+  const LoginInvalid = {
+    Email: "Enter your email",
+    Password: "Enter your password"
+  };
+  
+  const LoginState = {
+    Continue: "Continue",
+    ContinueWorking: "Continuing…",
+    Login: "Login",
+    LoginWorking: "Logging in…"
+  };
+  
+  const PasswordDisplay = {
+    Off: "off",
+    On: "on"
+  };
+  
+  const PasswordDisplayLabel = {
+    Hide: "Hide password",
+    Show: "Show password"
+  };
+  document.querySelector('.login__social-btn--google').addEventListener('click', function () {
+  alert('Continue with Google is currently in development - will be available very soon!');
+});
+  </script>
+</body>
+</html>
