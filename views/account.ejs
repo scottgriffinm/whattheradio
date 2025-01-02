@@ -1,12 +1,28 @@
+<!-- 
+    File: account.ejs
+    Purpose: Display and manage the user's account information and navigation options.
+    Dependencies:
+        - Fonts: Afacad Flux, Hanken Grotesk (imported via Google Fonts).
+        - Icons: AWS Cloudfront-hosted favicon and logo.
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Account</title>
+
+    <!-- Favicon -->
     <link rel="icon" href="https://d1xwysupjizl5b.cloudfront.net/faviconlogo.png" type="image/png">
-    <style>@import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&display=swap');
+
+    <!-- Styling -->
+    <style>
+        /* Font imports */
+        @import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&display=swap');
+
+        /* Base styles for the body */
         body {
             padding: 20px;
             font-family: "Afacad Flux", sans-serif;
@@ -14,21 +30,28 @@
             font-weight: 300;
             font-style: normal;
             font-size: 120%;
-            font-variation-settings:
-                "slnt" 0;
+            font-variation-settings: "slnt" 0;
         }
+
+        /* Container to center content on the page */
         .container {
             max-width: 600px;
             margin: 0 auto;
             margin-top: 180px;
         }
+
+        /* Main heading style */
         h1 {
             font-size: 1.8em;
         }
+
+        /* Styling for the account information section */
         .account-info {
             margin-top: 20px;
             font-size: 1.2em;
         }
+
+        /* General button styles */
         button {
             padding: 10px 20px;
             background-color: #000000;
@@ -43,66 +66,83 @@
             font-style: normal;
             font-size: 110%;
         }
+
+        /* Button hover effect */
         button:hover {
             background-color: #33393e;
         }
 
+        /* Logo positioning and responsiveness */
         .logo {
             position: absolute;
-            top: 20px;  
-            left: 40px; 
-            width: 40%; 
+            top: 20px;
+            left: 40px;
+            width: 40%;
             max-width: 552px;
             height: auto;
             z-index: 10;
         }
-        
-        /* Media query for mobile screens */
+
+        /* Adjustments for mobile screens */
         @media (max-width: 768px) {
             .logo {
                 width: 70%;
                 left: 20px;
             }
+
             .container {
-            margin-top: 90px;
-        }
+                margin-top: 90px;
+            }
         }
     </style>
+
+    <!-- JavaScript -->
     <script>
+        /**
+         * Displays a contact alert with a pre-defined message.
+         * Used for user feedback and directing users to support channels.
+         */
         function contactAlert() {
             alert("Please contact us at disagreeonline@gmail.com (we would love your feedback)");
         }
     </script>
 </head>
+
 <body>
+    <!-- Header section -->
     <a href="/">
-    <img src="https://d1xwysupjizl5b.cloudfront.net/headerlogo.png" alt="WTR? Logo" class="logo">
+        <img src="https://d1xwysupjizl5b.cloudfront.net/headerlogo.png" alt="WTR? Logo" class="logo">
     </a>
-    
+
+    <!-- Main content -->
     <div class="container">
         <h1>Your Account:</h1>
+
+        <!-- User account details -->
         <div class="account-info">
-            <p><strong>Email:</strong> <%= user.email %></p>
-            <p><strong>Tier:</strong> 
+            <p><strong>Email:</strong>
+                <%= user.email %>
+            </p>
+            <p><strong>Tier:</strong>
                 <%= user.tier %>
-                <% if (user.tier === 'Free') { %>
-                    :-)
-                <% } %>
-                <% if (user.tier === 'Silver' || user.tier === 'Gold') { %>
-                    (Your access ends on <%= new Date(user.subscriptionEndDate).toDateString() %>)
-                <% } %>
+                    <% if (user.tier==='Free' ) { %>
+                        :-)
+                        <% } %>
+                            <% if (user.tier==='Silver' || user.tier==='Gold' ) { %>
+                                (Your access ends on <%= new Date(user.subscriptionEndDate).toDateString() %>)
+                                    <% } %>
             </p>
         </div>
 
+        <!-- Navigation buttons -->
         <form action="/manage-tier" method="GET">
             <button type="submit">Manage Tier</button>
         </form>
-
         <button onclick="contactAlert()">Contact</button>
-
         <form action="/landing/<%= user.email %>" method="GET">
             <button type="submit">Back to Edit Your Radio</button>
         </form>
     </div>
 </body>
+
 </html>
