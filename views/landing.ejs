@@ -1,3 +1,11 @@
+<!-- 
+landing.ejs
+
+Interface for editing a user's radio station. Includes form inputs for updating station details (name, audio, YouTube link, and social media profile) and a live preview section. Validates inputs and supports .wav to .mp3 conversion using lame.js.
+
+Author: Scott Griffin
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,10 +14,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Your Radio Station</title>
     <link rel="icon" href="https://d1xwysupjizl5b.cloudfront.net/faviconlogo.png" type="image/png">
+
     <style>
+        /* Import Google and Adobe fonts */
         @import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&display=swap');
         @import url("https://use.typekit.net/tae2hei.css");
+        
         body,
         html {
             margin: 0;

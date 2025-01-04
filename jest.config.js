@@ -1,3 +1,9 @@
+/**
+ * jest.config.js
+ * 
+ * Jest Configuration File
+ */
+
 module.exports = {
     testEnvironment: "node",
     setupFiles: ["dotenv/config"],

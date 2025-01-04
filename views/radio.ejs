@@ -1,3 +1,11 @@
+<!-- 
+radio.ejs
+
+Dynamic radio station page featuring a custom audio player and optional YouTube video background synchronized with the stream. Includes support for user social media links and a watermark for free-tier users. Designed with an interactive play button and mobile-responsive scaling.
+
+Author: Scott Griffin
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,7 +16,12 @@
     What The Radio?
   </title>
   <link rel="icon" href="https://d1xwysupjizl5b.cloudfront.net/faviconlogo.png" type="image/png">
-  <style>@import url("https://use.typekit.net/tae2hei.css");
+
+  <!-- Styles -->
+  <style>
+    /* Import Adobe Typekit */
+    @import url("https://use.typekit.net/tae2hei.css");
+
     body,
     html {
       margin: 0;
@@ -22,6 +35,7 @@
       background-color: black;
     }
 
+    /* Video container for YouTube video background */
     #video-container {
       position: relative;
       width: 100%;
@@ -29,6 +43,7 @@
       overflow: hidden;
     }
 
+    /* YouTube iframe */
     iframe {
       position: absolute;
       top: 50%;
@@ -42,6 +57,7 @@
       pointer-events: none;
     }
 
+    /* Play button */
     #play-button {
       position: absolute;
       z-index: 10;
@@ -67,28 +83,6 @@
       border-bottom: 80px solid transparent;
       transition: opacity 1.2s ease;
       animation: shake 3s ease infinite;
-    }
-
-    @keyframes shake {
-
-      0%,
-      93% {
-        transform: translate(0, 0) rotate(0deg);
-      }
-
-      94%,
-      96% {
-        transform: translate(0, 0) rotate(5deg);
-      }
-
-      97%,
-      99% {
-        transform: translate(0, 0) rotate(-5deg);
-      }
-
-      100% {
-        transform: translate(0, 0) rotate(0deg);
-      }
     }
 
     #play-button:before {
@@ -119,6 +113,29 @@
       transition: all 200ms;
     }
 
+    /* Keyframes for play button shake animation */
+    @keyframes shake {
+
+      0%,
+      93% {
+        transform: translate(0, 0) rotate(0deg);
+      }
+
+      94%,
+      96% {
+        transform: translate(0, 0) rotate(5deg);
+      }
+
+      97%,
+      99% {
+        transform: translate(0, 0) rotate(-5deg);
+      }
+
+      100% {
+        transform: translate(0, 0) rotate(0deg);
+      }
+    }
+
     .fade-out {
       opacity: 0;
     }
@@ -127,6 +144,7 @@
       display: none;
     }
 
+    /* Social tag */
     #socialPreview {
       position: absolute;
       bottom: 10px;
@@ -141,9 +159,12 @@
       font-size: 16px;
       display: none;
     }
+
     #socialUserTag {
-      margin-bottom:6px;
+      margin-bottom: 6px;
     }
+
+    /* Watermark */
 
     #watermark {
       position: absolute;
@@ -159,232 +180,242 @@
     }
 
     /* Media query for mobile screens */
-@media  (max-width: 768px) {
-  iframe {
-    transform: translate(-50%, -50%) scale(3); /* Increase the scale for mobile */
-  }
+    @media (max-width: 768px) {
+      iframe {
+        transform: translate(-50%, -50%) scale(3);
+        /* Increase the scale for mobile */
+      }
 
-}
+    }
   </style>
 </head>
 
 <body>
-
+  <!-- Video container for YouTube player -->
   <div id="video-container" style="display: none;">
     <div id="player"></div>
   </div>
 
+  <!-- Interactive play button -->
   <a id="play-button">
     <span id="play-symbol"></span>
   </a>
 
+  <!-- Audio element for radio stream -->
   <audio id="audio" preload="auto" loop>
     <source src="<%= station.radioMix %>" type="audio/mp3">
     Your browser does not support the audio element.
   </audio>
+
   <% if (station.socialLink) { %>
+    <!-- Social media preview (conditionally rendered) -->
     <div id="socialPreview">
-      <a href="<%= station.socialLink %>" target="_blank" style="display: flex; align-items: center; gap: 5px; color: white; text-decoration: none;">
+      <a href="<%= station.socialLink %>" target="_blank"
+        style="display: flex; align-items: center; gap: 5px; color: white; text-decoration: none;">
         <span id="socialIcon"></span>
         <span id="socialUserTag"></span>
       </a>
     </div>
-  <% } %>
-
-  <% if (userTier === 'Free') { %>
-      <a href="/" target="_blank">
-        <img id="watermark"
-          src="https://d1xwysupjizl5b.cloudfront.net/watermarklogo.png"
-          alt="WTR? Logo">
-      </a>
-      <% } %>
-
-      <script>
-        const playButton = document.getElementById('play-button');
-        const playSymbol = document.getElementById('play-symbol');
-        const audio = document.getElementById('audio');
-        const videoContainer = document.getElementById('video-container');
-        
-        audio.load(); // Manually load the audio file
-
-        
-        // Function to extract YouTube video ID from the URL
-        function getYouTubeVideoId(url) {
-          const urlParams = new URLSearchParams(new URL(url).search);
-          return urlParams.get('v');  // Get the 'v' parameter from the URL
-        }
-    // Conditionally load the YouTube API only if station.youtubeUrl exists
-    <% if (station.youtubeUrl) { %>
-
-      const youtubeUrl = '<%= station.youtubeUrl %>';
-          const videoId = getYouTubeVideoId(youtubeUrl);
-
-          // Load YouTube Iframe API script
-          var tag = document.createElement('script');
-          tag.src = "https://www.youtube.com/iframe_api";
-          var firstScriptTag = document.getElementsByTagName('script')[0];
-          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-          var player;
-
-          // YouTube API ready function
-          function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-              videoId: videoId,  // Use dynamic YouTube video ID
-              playerVars: {
-                'playsinline': 1,
-                'autoplay': 0,  // Video will not autoplay until button click
-                'mute': 1,      // Keep video muted
-                'controls': 0,  // Disable controls
-                'loop': 0,      // Loop is handled in JavaScript
-                'rel': 0,       // Disable related videos
-                'modestbranding': 1
-              },
-              events: {
-                'onStateChange': onPlayerStateChange
-              }
-            });
-
-            // Make the video container visible since we have a YouTube URL
-            videoContainer.style.display = 'block';
-          }
-
-          // Function to restart the video when it ends
-          function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.ENDED) {
-              player.seekTo(0);  // Seek to the beginning of the video
-              player.playVideo();  // Start playback again
-            }
-          }
-
-            // Use Page Visibility API to sync and resume YouTube video when page becomes visible again
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        // Check if the YouTube video is paused, and resume it at the correct time
-        if (player) {
-          const videoDuration = player.getDuration();
-          const startTime = calculateStartTime() % videoDuration;  // Calculate correct video time
-          player.seekTo(startTime);  // Seek the video to the correct time
-          player.playVideo();  // Resume video
-        }
-      }
-    });
     <% } %>
 
-          function calculateStartTime() {
-            const now = new Date();
-            const currentTimeInSeconds = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
-            const audioDuration = <%= station.audioDuration %>;  // Use dynamic audio duration
-            const startTime = currentTimeInSeconds % audioDuration;
-            return startTime;
-          }
+      <% if (userTier==='Free' ) { %>
+        <!-- Watermark for free-tier users -->
+        <a href="/" target="_blank">
+          <img id="watermark" src="https://d1xwysupjizl5b.cloudfront.net/watermarklogo.png" alt="WTR? Logo">
+        </a>
+        <% } %>
 
-          // New function to calculate YouTube start time relative to the radio mix
-          function startYouTubeVideo() {
-            // Get the YouTube video duration
-            const videoDuration = player.getDuration();
+          <!-- JavaScript -->
+          <script>
+            const playButton = document.getElementById('play-button');
+            const playSymbol = document.getElementById('play-symbol');
+            const audio = document.getElementById('audio');
+            const videoContainer = document.getElementById('video-container');
 
-            // Calculate the relative start time for the video, using the same approach as the radio
-            const radioDuration = <%= station.audioDuration %>;  // Use dynamic radio duration
-            const relativeStartTime = calculateStartTime(radioDuration) % videoDuration;  // Map within the video duration
-            // Seek the YouTube video to the calculated start time and play
-            player.seekTo(relativeStartTime);
-            player.playVideo();
-          }
+            audio.load(); // Manually load the audio file
 
-        function startLiveStream() {
-          const startTime = calculateStartTime();
-          audio.currentTime = startTime;
-          setTimeout(function () {
-            audio.play();
-          }, 100);
-        }
+            // Function to extract YouTube video ID from the URL
+            function getYouTubeVideoId(url) {
+              const urlParams = new URLSearchParams(new URL(url).search);
+              return urlParams.get('v');  // Get the 'v' parameter from the URL
+            }
+            // Conditionally load the YouTube API only if station.youtubeUrl exists
+            <% if (station.youtubeUrl) { %>
 
-        playButton.addEventListener('click', () => {
-  // If YouTube video exists, play it
-  <% if (station.youtubeUrl) { %>
-    startYouTubeVideo();
-  <% } %>
+              const youtubeUrl = '<%= station.youtubeUrl %>';
+              const videoId = getYouTubeVideoId(youtubeUrl);
 
-            // Start the radio stream
-            startLiveStream();
+              // Load YouTube Iframe API script
+              var tag = document.createElement('script');
+              tag.src = "https://www.youtube.com/iframe_api";
+              var firstScriptTag = document.getElementsByTagName('script')[0];
+              firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-          // Add fade-out class to both the play button and the play symbol
-          playSymbol.classList.add('fade-out');
-          playButton.classList.add('fade-out');
+              var player;
 
-          // Remove shake animation when button is clicked
-          playSymbol.style.animation = 'none';
+              // YouTube API ready function
+              function onYouTubeIframeAPIReady() {
+                player = new YT.Player('player', {
+                  videoId: videoId,  // Use dynamic YouTube video ID
+                  playerVars: {
+                    'playsinline': 1,
+                    'autoplay': 0,  // Video will not autoplay until button click
+                    'mute': 1,      // Keep video muted
+                    'controls': 0,  // Disable controls
+                    'loop': 0,      // Loop is handled in JavaScript
+                    'rel': 0,       // Disable related videos
+                    'modestbranding': 1
+                  },
+                  events: {
+                    'onStateChange': onPlayerStateChange
+                  }
+                });
 
-          // After 1 second (matching the transition duration), hide the button completely
-          setTimeout(() => {
-            playButton.style.display = 'none';
-          }, 1000);  // Matches the transition duration of 1 second
-        });
+                // Make the video container visible since we have a YouTube URL
+                videoContainer.style.display = 'block';
+              }
 
-        function parseProfileLink(url) {
-          const xPattern = /^https?:\/\/(www\.)?x\.com\/([A-Za-z0-9_]+)\/?$/;
-          const instagramPattern = /^https?:\/\/(www\.)?instagram\.com\/([A-Za-z0-9_.]+)\/?$/;
-          let match;
+              // Function to restart the video when it ends
+              function onPlayerStateChange(event) {
+                if (event.data === YT.PlayerState.ENDED) {
+                  player.seekTo(0);  // Seek to the beginning of the video
+                  player.playVideo();  // Start playback again
+                }
+              }
 
-          // Check for X profile link
-          match = url.match(xPattern);
-          if (match) {
-            return { website: 'X', userTag: '@' + match[2] };
-          }
+              // Use Page Visibility API to sync and resume YouTube video when page becomes visible again
+              document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                  // Check if the YouTube video is paused, and resume it at the correct time
+                  if (player) {
+                    const videoDuration = player.getDuration();
+                    const startTime = calculateStartTime() % videoDuration;  // Calculate correct video time
+                    player.seekTo(startTime);  // Seek the video to the correct time
+                    player.playVideo();  // Resume video
+                  }
+                }
+              });
+    <% } %>
 
-          // Check for Instagram profile link
-          match = url.match(instagramPattern);
-          if (match) {
-            return { website: 'Instagram', userTag: '@' + match[2] };
-          }
+              // function to calculate audio start time relative to current time
+              function calculateStartTime() {
+                const now = new Date();
+                const currentTimeInSeconds = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
+                const audioDuration = <%= station.audioDuration %>;  // Use dynamic audio duration
+                const startTime = currentTimeInSeconds % audioDuration;
+                return startTime;
+              }
 
-          return null;
-        }
+            // New function to calculate YouTube start time relative to the radio mix
+            function startYouTubeVideo() {
+              // Get the YouTube video duration
+              const videoDuration = player.getDuration();
 
-<% if (station.socialLink) { %>
-
-          function updateSocialPreview() {
-            const socialLink = '<%= station.socialLink %>';
-            const socialPreview = document.getElementById('socialPreview');
-            const socialIcon = document.getElementById('socialIcon');
-            const socialUserTag = document.getElementById('socialUserTag');
-
-            // Clear the current preview
-            socialIcon.innerHTML = '';
-            socialUserTag.textContent = '';
-
-            if (!socialLink) {
-              socialPreview.style.display = 'none';
-              return;
+              // Calculate the relative start time for the video, using the same approach as the radio
+              const radioDuration = <%= station.audioDuration %>;  // Use dynamic radio duration
+              const relativeStartTime = calculateStartTime(radioDuration) % videoDuration;  // Map within the video duration
+              // Seek the YouTube video to the calculated start time and play
+              player.seekTo(relativeStartTime);
+              player.playVideo();
             }
 
-            const profileData = parseProfileLink(socialLink);
+            // Start live stream
+            function startLiveStream() {
+              const startTime = calculateStartTime();
+              audio.currentTime = startTime;
+              setTimeout(function () {
+                audio.play();
+              }, 100);
+            }
 
-            if (profileData) {
-              socialPreview.style.display = 'flex';
-              socialUserTag.textContent = profileData.userTag;
+            // On play button click
+            playButton.addEventListener('click', () => {
+            // If YouTube video exists, play it
+            <% if (station.youtubeUrl) { %>
+                          startYouTubeVideo();
+            <% } %>
 
-              if (profileData.website === 'X') {
-    socialIcon.innerHTML = `
+              // Start the radio stream
+              startLiveStream();
+
+              // Add fade-out class to both the play button and the play symbol
+              playSymbol.classList.add('fade-out');
+              playButton.classList.add('fade-out');
+
+              // Remove shake animation when button is clicked
+              playSymbol.style.animation = 'none';
+
+              // After 1 second (matching the transition duration), hide the button completely
+              setTimeout(() => {
+                playButton.style.display = 'none';
+              }, 1000);  // Matches the transition duration of 1 second
+            });
+
+            // Parse profile link input
+            function parseProfileLink(url) {
+              const xPattern = /^https?:\/\/(www\.)?x\.com\/([A-Za-z0-9_]+)\/?$/;
+              const instagramPattern = /^https?:\/\/(www\.)?instagram\.com\/([A-Za-z0-9_.]+)\/?$/;
+              let match;
+
+              // Check for X profile link
+              match = url.match(xPattern);
+              if (match) {
+                return { website: 'X', userTag: '@' + match[2] };
+              }
+
+              // Check for Instagram profile link
+              match = url.match(instagramPattern);
+              if (match) {
+                return { website: 'Instagram', userTag: '@' + match[2] };
+              }
+
+              return null;
+            }
+
+            // If there's a social link associated with the station 
+            // add to page
+              <% if (station.socialLink) { %>
+
+              function updateSocialPreview() {
+                const socialLink = '<%= station.socialLink %>';
+                const socialPreview = document.getElementById('socialPreview');
+                const socialIcon = document.getElementById('socialIcon');
+                const socialUserTag = document.getElementById('socialUserTag');
+
+                // Clear the current preview
+                socialIcon.innerHTML = '';
+                socialUserTag.textContent = '';
+
+                if (!socialLink) {
+                  socialPreview.style.display = 'none';
+                  return;
+                }
+
+                const profileData = parseProfileLink(socialLink);
+
+                if (profileData) {
+                  socialPreview.style.display = 'flex';
+                  socialUserTag.textContent = profileData.userTag;
+
+                  if (profileData.website === 'X') {
+                    socialIcon.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="24px" height="24px">
             <rect x="11" y="4" width="28" height="42" fill="#ffffff"/> <!-- Adjusted white background -->
             <path d="M 11 4 C 7.134 4 4 7.134 4 11 L 4 39 C 4 42.866 7.134 46 11 46 L 39 46 C 42.866 46 46 42.866 46 39 L 46 11 C 46 7.134 42.866 4 39 4 L 11 4 z M 13.085938 13 L 21.023438 13 L 26.660156 21.009766 L 33.5 13 L 36 13 L 27.789062 22.613281 L 37.914062 37 L 29.978516 37 L 23.4375 27.707031 L 15.5 37 L 13 37 L 22.308594 26.103516 L 13.085938 13 z M 16.914062 15 L 31.021484 35 L 34.085938 35 L 19.978516 15 L 16.914062 15 z" fill="#000000"/>
         </svg>`;
-} else if (profileData.website === 'Instagram') {
-                socialIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px"><radialGradient id="yOrnnhliCrdS2gy~4tD8ma" cx="19.38" cy="42.035" r="44.899" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fd5"/><stop offset=".328" stop-color="#ff543f"/><stop offset=".348" stop-color="#fc5245"/><stop offset=".504" stop-color="#e64771"/><stop offset=".643" stop-color="#d53e91"/><stop offset=".761" stop-color="#cc39a4"/><stop offset=".841" stop-color="#c837ab"/></radialGradient><path fill="url(#yOrnnhliCrdS2gy~4tD8ma)" d="M34.017,41.99l-20,0.019c-4.4,0.004-8.003-3.592-8.008-7.992l-0.019-20c-0.004-4.4,3.592-8.003,7.992-8.008l20-0.019c4.4-0.004,8.003,3.592,8.008,7.992l0.019,20C42.014,38.383,38.417,41.986,34.017,41.99z"/><path fill="#fff" d="M24,31c-3.859,0-7-3.14-7-7s3.141-7,7-7s7,3.14,7,7S27.859,31,24,31z M24,19c-2.757,0-5,2.243-5,5s2.243,5,5,5s5-2.243,5-5S26.757,19,24,19z"/><circle cx="31.5" cy="16.5" r="1.5" fill="#fff"/><path fill="#fff" d="M30,37H18c-3.859,0-7-3.14-7-7V18c0-3.86,3.141-7,7-7h12c3.859,0,7,3.14,7,7v12C37,33.86,33.859,37,30,37z M18,13c-2.757,0-5,2.243-5,5v12c0,2.757,2.243,5,5,5h12c2.757,0,5-2.243,5-5V18c0-2.757-2.243-5-5-5H18z"/></svg>`;
+                  } else if (profileData.website === 'Instagram') {
+                    socialIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px"><radialGradient id="yOrnnhliCrdS2gy~4tD8ma" cx="19.38" cy="42.035" r="44.899" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fd5"/><stop offset=".328" stop-color="#ff543f"/><stop offset=".348" stop-color="#fc5245"/><stop offset=".504" stop-color="#e64771"/><stop offset=".643" stop-color="#d53e91"/><stop offset=".761" stop-color="#cc39a4"/><stop offset=".841" stop-color="#c837ab"/></radialGradient><path fill="url(#yOrnnhliCrdS2gy~4tD8ma)" d="M34.017,41.99l-20,0.019c-4.4,0.004-8.003-3.592-8.008-7.992l-0.019-20c-0.004-4.4,3.592-8.003,7.992-8.008l20-0.019c4.4-0.004,8.003,3.592,8.008,7.992l0.019,20C42.014,38.383,38.417,41.986,34.017,41.99z"/><path fill="#fff" d="M24,31c-3.859,0-7-3.14-7-7s3.141-7,7-7s7,3.14,7,7S27.859,31,24,31z M24,19c-2.757,0-5,2.243-5,5s2.243,5,5,5s5-2.243,5-5S26.757,19,24,19z"/><circle cx="31.5" cy="16.5" r="1.5" fill="#fff"/><path fill="#fff" d="M30,37H18c-3.859,0-7-3.14-7-7V18c0-3.86,3.141-7,7-7h12c3.859,0,7,3.14,7,7v12C37,33.86,33.859,37,30,37z M18,13c-2.757,0-5,2.243-5,5v12c0,2.757,2.243,5,5,5h12c2.757,0,5-2.243,5-5V18c0-2.757-2.243-5-5-5H18z"/></svg>`;
+                  }
+                } else {
+                  socialPreview.style.display = 'none';
+                }
               }
-            } else {
-              socialPreview.style.display = 'none';
-            }
-          }
 
-          updateSocialPreview();
+              updateSocialPreview();
 
-<% } %>
+        <% } %>
 
-      </script>
+          </script>
 
 </body>
-
 </html>

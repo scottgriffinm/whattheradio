@@ -1,12 +1,25 @@
+<!-- 
+manage-tier.ejs
+
+Interface for managing subscription tiers. Displays current tier details and options to switch between Free, Silver, and Gold tiers. Includes benefits, pricing, and subscription expiration information. Warns users about potential data loss when downgrading tiers.
+
+Author: Scott Griffin
+-->
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Subscription Tier</title>
     <link rel="icon" href="https://d1xwysupjizl5b.cloudfront.net/faviconlogo.png" type="image/png">
-    <style>@import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&display=swap');
+    <!-- Stylesheet -->
+    <style>
+        /* Import Google fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&display=swap');
+
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
@@ -18,18 +31,22 @@
             font-size: 120%;
             font-variation-settings: "slnt" 0;
         }
+
         .container {
             margin-top: 80px;
         }
+
         h1 {
             font-size: 1.8em;
             margin-bottom: 20px;
         }
+
         .tiers-container {
             display: flex;
             justify-content: center;
             gap: 20px;
         }
+
         .tier {
             border: 1px solid #ccc;
             padding: 20px;
@@ -40,11 +57,13 @@
             flex-direction: column;
             justify-content: space-between;
         }
+
         .tier h2 {
             font-size: 1.5em;
             margin-top: 0px;
             margin-bottom: 0px;
         }
+
         .benefits {
             margin-top: 10px;
             margin-bottom: 0px;
@@ -52,20 +71,24 @@
             text-align: left;
             flex-grow: 1;
         }
+
         .price {
             margin-top: 10px;
             font-size: 1.2em;
             font-weight: bold;
         }
+
         .current-tier {
             background-color: #d4edda;
             border: 2px solid #28a745;
         }
+
         .your-tier {
             color: #000000;
             font-size: 0.9em;
             margin-top: 5px;
         }
+
         button {
             padding: 10px 20px;
             background-color: #000000;
@@ -76,14 +99,16 @@
             margin-top: 10px;
             margin-bottom: 10px;
             font-family: "Hanken Grotesk", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 500;
-    font-style: normal;
-    font-size: 100%;
+            font-optical-sizing: auto;
+            font-weight: 500;
+            font-style: normal;
+            font-size: 100%;
         }
+
         button:hover {
             background-color: #33393e;
         }
+
         .logo {
             position: absolute;
             top: 20px;
@@ -93,12 +118,15 @@
             height: auto;
             z-index: 10;
         }
+
         #backToAccountButton {
             margin-top: 20px;
         }
+
         #subscriptionNote {
             margin-bottom: 0px;
         }
+
         @media (max-width: 768px) {
             .tiers-container {
                 flex-direction: column;
@@ -136,12 +164,13 @@
         }
     </script>
 </head>
+
 <body>
     <!-- Header Logo -->
     <a href="/">
-    <img src="https://d1xwysupjizl5b.cloudfront.net/headerlogo.png" alt="WTR? Logo" class="logo">
+        <img src="https://d1xwysupjizl5b.cloudfront.net/headerlogo.png" alt="WTR? Logo" class="logo">
     </a>
-    
+
     <div class="container">
         <!-- Title -->
         <h1>Manage Your Tier:</h1>
@@ -150,28 +179,31 @@
             <!-- Free Tier -->
             <div class="tier <%= user.tier === 'Free' ? 'current-tier' : '' %>">
                 <h2>Free
-                <% if (user.tier === 'Free') { %>
-                    <inline class="your-tier">(Your Tier)</inline>
-                <% } %></h2>
+                    <% if (user.tier==='Free' ) { %>
+                        <inline class="your-tier">(Your Tier)</inline>
+                        <% } %>
+                </h2>
                 <div class="benefits freeBenefits">
                     <p>- Watermark</p>
                     <p>- 50MB filesize limit</p>
                     <p>- One update/day</p>
                 </div>
-                <% if (user.tier !== 'Free') { %>
-                <form action="/update-tier" method="POST">
-                    <input type="hidden" name="tier" value="Free">
-                    <button type="submit" onclick="confirmSwitchTier('Free', event, '<%= user.tier %>')">Switch to Free</button>
-                </form>
-                <% } %>
+                <% if (user.tier !=='Free' ) { %>
+                    <form action="/update-tier" method="POST">
+                        <input type="hidden" name="tier" value="Free">
+                        <button type="submit" onclick="confirmSwitchTier('Free', event, '<%= user.tier %>')">Switch to
+                            Free</button>
+                    </form>
+                    <% } %>
             </div>
 
             <!-- Silver Tier -->
             <div class="tier <%= user.tier === 'Silver' ? 'current-tier' : '' %>">
                 <h2>Silver
-                <% if (user.tier === 'Silver') { %>
-                    <inline class="your-tier">(Your Tier)</inline>
-                <% } %></h2>
+                    <% if (user.tier==='Silver' ) { %>
+                        <inline class="your-tier">(Your Tier)</inline>
+                        <% } %>
+                </h2>
                 <div class="benefits">
                     <p>- No watermark</p>
                     <p>- 600MB filesize limit</p>
@@ -179,38 +211,43 @@
                 </div>
 
                 <!-- Access End Date -->
-                <% if (user.tier === 'Silver') { %>
-                    <p><strong>Your access ends on:</strong><br> <%= new Date(user.subscriptionEndDate).toDateString() %></p>
-                <% } %>
+                <% if (user.tier==='Silver' ) { %>
+                    <p><strong>Your access ends on:</strong><br>
+                        <%= new Date(user.subscriptionEndDate).toDateString() %>
+                    </p>
+                    <% } %>
 
-                <!-- Price Section -->
-                <div class="price">$3 / month</div>
+                        <!-- Price Section -->
+                        <div class="price">$3 / month</div>
 
-                <!-- Buttons for Silver Tier -->
-                <% if (user.tier === 'Silver') { %>
-                    <form action="/create-checkout-session" method="POST">
-                        <input type="hidden" name="tier" value="Silver">
-                        <button type="submit">Buy Another Month</button>
-                    </form>
-                <% } else if (user.tier === 'Free') { %>
-                    <form action="/create-checkout-session" method="POST">
-                        <input type="hidden" name="tier" value="Silver">
-                        <button type="submit">Get Silver</button>
-                    </form>
-                <% } else if (user.tier === 'Gold') { %>
-                    <form action="/create-checkout-session" method="POST">
-                        <input type="hidden" name="tier" value="Silver">
-                        <button type="submit" onclick="confirmSwitchTier('Silver', event, '<%= user.tier %>')">Switch to Silver</button>
-                    </form>
-                <% } %>
+                        <!-- Buttons for Silver Tier -->
+                        <% if (user.tier==='Silver' ) { %>
+                            <form action="/create-checkout-session" method="POST">
+                                <input type="hidden" name="tier" value="Silver">
+                                <button type="submit">Buy Another Month</button>
+                            </form>
+                            <% } else if (user.tier==='Free' ) { %>
+                                <form action="/create-checkout-session" method="POST">
+                                    <input type="hidden" name="tier" value="Silver">
+                                    <button type="submit">Get Silver</button>
+                                </form>
+                                <% } else if (user.tier==='Gold' ) { %>
+                                    <form action="/create-checkout-session" method="POST">
+                                        <input type="hidden" name="tier" value="Silver">
+                                        <button type="submit"
+                                            onclick="confirmSwitchTier('Silver', event, '<%= user.tier %>')">Switch to
+                                            Silver</button>
+                                    </form>
+                                    <% } %>
             </div>
 
             <!-- Gold Tier -->
             <div class="tier <%= user.tier === 'Gold' ? 'current-tier' : '' %>">
                 <h2>Gold
-                <% if (user.tier === 'Gold') { %>
-                    <inline class="your-tier">(Your Tier)</inline>
-                <% } %></h2>
+                    <% if (user.tier==='Gold' ) { %>
+                        <inline class="your-tier">(Your Tier)</inline>
+                        <% } %>
+                </h2>
                 <div class="benefits">
                     <p>- No watermark</p>
                     <p>- 3GB filesize limit</p>
@@ -218,32 +255,37 @@
                 </div>
 
                 <!-- Access End Date -->
-                <% if (user.tier === 'Gold') { %>
-                    <p><strong>Your access ends on:</strong><br> <%= new Date(user.subscriptionEndDate).toDateString() %></p>
-                <% } %>
+                <% if (user.tier==='Gold' ) { %>
+                    <p><strong>Your access ends on:</strong><br>
+                        <%= new Date(user.subscriptionEndDate).toDateString() %>
+                    </p>
+                    <% } %>
 
-                <!-- Price Section -->
-                <div class="price">$7/ month</div>
+                        <!-- Price Section -->
+                        <div class="price">$7/ month</div>
 
-                <!-- Buttons for Gold Tier -->
-                <% if (user.tier === 'Gold') { %>
-                    <form action="/create-checkout-session" method="POST">
-                        <input type="hidden" name="tier" value="Gold">
-                        <button type="submit">Buy Another Month</button>
-                    </form>
-                <% } else if (user.tier === 'Free' || user.tier === 'Silver') { %>
-                    <form action="/create-checkout-session" method="POST">
-                        <input type="hidden" name="tier" value="Gold">
-                        <button type="submit" onclick="confirmSwitchTier('Gold', event, '<%= user.tier %>')">Get Gold</button>
-                    </form>
-                <% } %>
+                        <!-- Buttons for Gold Tier -->
+                        <% if (user.tier==='Gold' ) { %>
+                            <form action="/create-checkout-session" method="POST">
+                                <input type="hidden" name="tier" value="Gold">
+                                <button type="submit">Buy Another Month</button>
+                            </form>
+                            <% } else if (user.tier==='Free' || user.tier==='Silver' ) { %>
+                                <form action="/create-checkout-session" method="POST">
+                                    <input type="hidden" name="tier" value="Gold">
+                                    <button type="submit"
+                                        onclick="confirmSwitchTier('Gold', event, '<%= user.tier %>')">Get Gold</button>
+                                </form>
+                                <% } %>
             </div>
         </div>
-<p id="subscriptionNote">We don't do automatically recurring subscriptions - you won't be charged if you forget to cancel.</p>
+        <p id="subscriptionNote">We don't do automatically recurring subscriptions - you won't be charged if you forget
+            to cancel.</p>
         <!-- Back to Account button -->
         <form action="/account" method="GET">
             <button id="backToAccountButton" type="submit">Back to Your Account</button>
         </form>
     </div>
 </body>
+
 </html>

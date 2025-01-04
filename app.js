@@ -1,3 +1,28 @@
+/**
+ * app.js
+ * 
+ * Server file for the "What The Radio?" website.
+ * 
+ * Author: Scott Griffin
+ * 
+ * Index:
+ * -------------------------------
+ * Imports
+ * Server variables
+ * Tier details
+ * Regular expressions
+ * AWS configuration
+ * Rate limiters
+ * Helper functions
+ * App setup
+ * Route handlers
+ * Start server
+ * -------------------------------
+ */
+
+// -------------------------------
+// Imports
+// -------------------------------
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -17,11 +42,14 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// -------------------------------
+// Server variables
+// -------------------------------
+
 const systemEmail = process.env.SYSTEM_EMAIL;
 const systemEmailPass = process.env.SYSTEM_EMAIL_PASS;
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
 const REGION = process.env.AWS_REGION;
-
 const reservedStationNames = [
   'login',
   'signup',
@@ -48,12 +76,62 @@ const reservedStationNames = [
   'admin',
 ];
 
+// Email transporter setup (for confirmation emails)
+let transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: systemEmail,
+    pass: systemEmailPass, // You need to enable "Less Secure Apps" or use an app password
+  },
+});
+
+// -------------------------------
+// Tier details
+// -------------------------------
+
+// Prices for each tier (in cents)
+const tierPrices = {
+  Silver: 300, // $3 per month
+  Gold: 700, // $7 per month
+};
+
+// Limits for each tier
+const tierListenerLimits = { // per month
+  Free: Infinity,
+  Silver: Infinity,
+  Gold: Infinity
+};
+
+// Limits for station updates for each tier
+const tierUpdateLimits = { // per day
+  Free: 1,
+  Silver: 5,
+  Gold: 24
+};
+
+// Limits for station filesizes for each tier 
+const tierFilesizeLimits = { // in kb
+  Free: 50_000, // 50MB
+  Silver: 600_000, // 600MB
+  Gold: 3_000_000 // 3GB
+};
+
+
+// -------------------------------
+// Regular expressions
+// -------------------------------
+
 // Define a regex for valid station names: only allow letters, numbers, and hyphens
 const validNameRegex = /^[a-zA-Z0-9-]+$/;
 // Regular expression for email validation
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Regular expression for password validation (allow special characters, but no spaces)
 const passwordRegex = /^[\S]+$/;  // No spaces allowed, but any other character is permitted
+
+
+// -------------------------------
+// AWS configuration
+// -------------------------------
 
 // Configure AWS S3
 AWS.config.update({
@@ -63,6 +141,19 @@ AWS.config.update({
 });
 const s3 = new AWS.S3();
 
+// Configure RDS MySQL connection
+const db = mysql.createPool({
+  host: process.env.DB_HOST,       // RDS endpoint
+  user: process.env.DB_USER,       // MySQL username
+  password: process.env.DB_PASS,   // MySQL password
+  database: process.env.DB_NAME,   // Database name
+  port: process.env.DB_PORT
+});
+
+// -------------------------------
+// Rate limiters
+// -------------------------------
+
 // Short term general limiter to protect from quick abuse
 const generalLimiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000, // 24 hours
@@ -71,25 +162,26 @@ const generalLimiter = rateLimit({
 });
 app.use(generalLimiter);
 
-
+// Rate limiter for /discover
 const discoverLimiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000, // 24 hours
   max: 100, // Limit each IP to 100 requests per day
   message: 'Too many requests from this IP today, please try again later.',
 });
 
+// Rate limiter for radio station reaction buttons
 const reactionLimiter = rateLimit({
   windowMs: 10 * 1000, // 10 seconds
   max: 5, // Limit each IP to 5 requests per 10 seconds
   message: 'Too many requests from this IP today, please try again later.',
 });
 
+// Rate limiter for /login
 const loginPageLimiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000, // 24 hours
   max: 100, // Limit each IP to 100 requests per day
   message: 'Too many requests from this IP today, please try again later.',
 });
-
 
 // Rate limiter for /privacy
 const privacyLimiter = rateLimit({
@@ -196,40 +288,9 @@ const nameLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again after 24 hours.',
 });
 
-// Configure MySQL connection
-const db = mysql.createPool({
-  host: process.env.DB_HOST,       // RDS endpoint
-  user: process.env.DB_USER,       // MySQL username
-  password: process.env.DB_PASS,   // MySQL password
-  database: process.env.DB_NAME,   // Database name
-  port: process.env.DB_PORT 
-});
-
-
-// Prices for each tier (in cents)
-const tierPrices = {
-  Silver: 300, // $3 per month
-  Gold: 700, // $7 per month
-};
-
-// Limits for each tier
-const tierListenerLimits = { // per month
-  Free: Infinity,
-  Silver: Infinity,
-  Gold: Infinity
-};
-
-const tierUpdateLimits = { // per day
-  Free: 1,
-  Silver:5,
-  Gold: 24
-};
-
-const tierFilesizeLimits = { // in kb
-  Free: 50_000, // 50MB
-  Silver: 600_000, // 600MB
-  Gold: 3_000_000 // 3GB
-};
+// -------------------------------
+// Helper functions
+// -------------------------------
 
 // Function to hash a password
 async function hashPassword(password) {
@@ -262,6 +323,118 @@ function isAuthenticated(req, res, next) {
     res.redirect('/'); // Redirect to login if not authenticated
   }
 }
+
+// Fetch users from the database
+async function getUsers() {
+  const [rows] = await db.query('SELECT * FROM users');
+  return rows;
+}
+
+// Fetch a specific user by email
+async function getUserByEmail(email) {
+  const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+  return rows[0];
+}
+
+// Save a new user to the database
+async function saveUser(user) {
+  const { email, password, confirmed, tier, subscriptionEndDate, updates, disabled } = user;
+  await db.query('INSERT INTO users (email, password, confirmed, tier, subscriptionEndDate, updates, disabled) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [email, password, confirmed, tier, subscriptionEndDate, updates, disabled]);
+}
+
+// Update user data in the database
+async function updateUser(user) {
+  const { email, password, confirmed, tier, subscriptionEndDate, updates, disabled } = user;
+  await db.query('UPDATE users SET password = ?, confirmed = ?, tier = ?, subscriptionEndDate = ?, updates = ?, disabled = ? WHERE email = ?',
+    [password, confirmed, tier, subscriptionEndDate, updates, disabled, email]);
+}
+
+// Fetch stations from the database
+async function getStations() {
+  const [rows] = await db.query('SELECT * FROM stations');
+  return rows;
+}
+
+// Fetch a specific station by email
+async function getStationByEmail(email) {
+  const [rows] = await db.query('SELECT * FROM stations WHERE email = ?', [email]);
+  return rows[0];
+}
+
+// Fetch a specific station by name
+async function getStationByName(name) {
+  const [rows] = await db.query('SELECT * FROM stations WHERE name = ?', [name]);
+  return rows[0];
+}
+
+// Save or update station in the database
+async function saveStation(station) {
+  const { name, youtubeUrl, socialLink, radioMix, originalFilename, email, audioDuration, listenerCount } = station;
+
+  await db.query(
+    `INSERT INTO stations (name, youtubeUrl, socialLink, radioMix, originalFilename, email, audioDuration, listenerCount) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
+    ON DUPLICATE KEY UPDATE 
+    name = VALUES(name), 
+    youtubeUrl = VALUES(youtubeUrl), 
+    socialLink = VALUES(socialLink), 
+    radioMix = VALUES(radioMix), 
+    originalFilename = VALUES(originalFilename), 
+    audioDuration = VALUES(audioDuration), 
+    listenerCount = VALUES(listenerCount)`,
+    [name, youtubeUrl, socialLink, radioMix, originalFilename, email, audioDuration, listenerCount]
+  );
+}
+
+
+// Function to upload a file to S3
+async function uploadFileToS3(file, bucketName, key) {
+  const params = {
+    Bucket: bucketName,
+    Key: key,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+  };
+
+  try {
+    const data = await s3.upload(params).promise();
+    console.log(`File uploaded successfully at ${data.Location}`);
+    return data.Location; // Return the URL of the uploaded file
+  } catch (err) {
+    console.error('Error uploading file to S3:', err);
+    throw err;
+  }
+}
+
+// Function to delete a file from S3
+async function deleteFileFromS3(bucketName, fileUrl) {
+  // Extract the key from the URL by removing the bucket's domain and decode it
+  const key = decodeURIComponent(fileUrl.split(`${bucketName}.s3.${REGION}.amazonaws.com/`)[1]);
+
+  if (!key) {
+    console.error('Error: Could not extract the key from the file URL.');
+    return;
+  }
+
+  const params = {
+    Bucket: bucketName,
+    Key: key,
+  };
+
+  try {
+    const response = await s3.deleteObject(params).promise();
+    console.log(`File deleted successfully: ${fileUrl}`);
+    console.log('Delete response:', response);
+  } catch (err) {
+    console.error('Error deleting file from S3:', err);
+    throw err;
+  }
+}
+
+// -------------------------------
+// App setup
+// -------------------------------
 
 // Multer setup to handle file uploads in memory
 const storage = multer.memoryStorage();
@@ -323,129 +496,13 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-// Function to upload a file to S3
-async function uploadFileToS3(file, bucketName, key) {
-  const params = {
-    Bucket: bucketName,
-    Key: key,
-    Body: file.buffer,
-    ContentType: file.mimetype,
-  };
-
-  try {
-    const data = await s3.upload(params).promise();
-    console.log(`File uploaded successfully at ${data.Location}`);
-    return data.Location; // Return the URL of the uploaded file
-  } catch (err) {
-    console.error('Error uploading file to S3:', err);
-    throw err;
-  }
-}
-
-// Function to delete a file from S3
-async function deleteFileFromS3(bucketName, fileUrl) {
-  // Extract the key from the URL by removing the bucket's domain and decode it
-  const key = decodeURIComponent(fileUrl.split(`${bucketName}.s3.${REGION}.amazonaws.com/`)[1]);
-
-  if (!key) {
-    console.error('Error: Could not extract the key from the file URL.');
-    return;
-  }
-
-  const params = {
-    Bucket: bucketName,
-    Key: key,
-  };
-
-  try {
-    const response = await s3.deleteObject(params).promise();
-    console.log(`File deleted successfully: ${fileUrl}`);
-    console.log('Delete response:', response);
-  } catch (err) {
-    console.error('Error deleting file from S3:', err);
-    throw err;
-  }
-}
-
-// Email transporter setup (for confirmation emails)
-let transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: systemEmail,
-    pass: systemEmailPass, // You need to enable "Less Secure Apps" or use an app password
-  },
-});
-
-// Fetch users from the database
-async function getUsers() {
-  const [rows] = await db.query('SELECT * FROM users');
-  return rows;
-}
-
-// Fetch a specific user by email
-async function getUserByEmail(email) {
-  const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-  return rows[0];
-}
-
-// Save a new user to the database
-async function saveUser(user) {
-  const { email, password, confirmed, tier, subscriptionEndDate, updates, disabled } = user;
-  await db.query('INSERT INTO users (email, password, confirmed, tier, subscriptionEndDate, updates, disabled) VALUES (?, ?, ?, ?, ?, ?, ?)', 
-  [email, password, confirmed, tier, subscriptionEndDate, updates, disabled]);
-}
-
-// Update user data in the database
-async function updateUser(user) {
-  const { email, password, confirmed, tier, subscriptionEndDate, updates, disabled } = user;
-  await db.query('UPDATE users SET password = ?, confirmed = ?, tier = ?, subscriptionEndDate = ?, updates = ?, disabled = ? WHERE email = ?', 
-  [password, confirmed, tier, subscriptionEndDate, updates, disabled, email]);
-}
-
-// Fetch stations from the database
-async function getStations() {
-  const [rows] = await db.query('SELECT * FROM stations');
-  return rows;
-}
-
-// Fetch a specific station by email
-async function getStationByEmail(email) {
-  const [rows] = await db.query('SELECT * FROM stations WHERE email = ?', [email]);
-  return rows[0];
-}
-
-// Fetch a specific station by name
-async function getStationByName(name) {
-  const [rows] = await db.query('SELECT * FROM stations WHERE name = ?', [name]);
-  return rows[0];
-}
-
-// Save or update station in the database
-async function saveStation(station) {
-  const { name, youtubeUrl, socialLink, radioMix, originalFilename, email, audioDuration, listenerCount } = station;
-  
-  await db.query(
-    `INSERT INTO stations (name, youtubeUrl, socialLink, radioMix, originalFilename, email, audioDuration, listenerCount) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
-    ON DUPLICATE KEY UPDATE 
-    name = VALUES(name), 
-    youtubeUrl = VALUES(youtubeUrl), 
-    socialLink = VALUES(socialLink), 
-    radioMix = VALUES(radioMix), 
-    originalFilename = VALUES(originalFilename), 
-    audioDuration = VALUES(audioDuration), 
-    listenerCount = VALUES(listenerCount)`,
-    [name, youtubeUrl, socialLink, radioMix, originalFilename, email, audioDuration, listenerCount]
-  );
-}
-
-
-// Routes
+// -------------------------------
+// Route handlers
+// -------------------------------
 
 // Discover Page (main landing)
 app.get('/', discoverLimiter, async (req, res) => {
   console.log('GET / (discover page) triggered');
-
   try {
     // Fetch stations with both a radioMix and a youtubeUrl, ordered by likes in descending order
     const [stations] = await db.query('SELECT * FROM stations WHERE radioMix IS NOT NULL AND youtubeUrl IS NOT NULL ORDER BY likes DESC');
@@ -471,7 +528,7 @@ app.post('/station/:name/react', reactionLimiter, async (req, res) => {
   try {
     const incrementValue = increment ? 1 : -1;
     const reactionColumn = reactionType === "likes" ? "likes" : "flags";
-    
+
     await db.query(
       `UPDATE stations SET ${reactionColumn} = GREATEST(0, ${reactionColumn} + ?) WHERE name = ?`,
       [incrementValue, name]
@@ -493,7 +550,6 @@ app.get('/login', loginPageLimiter, (req, res) => {
     invalidLogin: false
   });
 });
-
 
 // Privacy Policy page
 app.get('/privacy', privacyLimiter, (req, res) => {
@@ -520,7 +576,7 @@ app.post('/login', loginLimiter, async (req, res) => {
   if (!password || !passwordRegex.test(password)) {
     return res.status(400).json({ message: 'Invalid password format. No spaces allowed.' });
   }
-  
+
   // Check for existing user
   const user = await getUserByEmail(email);
   if (!user) {
@@ -547,7 +603,6 @@ app.post('/login', loginLimiter, async (req, res) => {
     res.status(500).json({ message: 'Error during login' });
   }
 });
-
 
 // Handle sign-up form submission
 app.post('/signup', signupLimiter, async (req, res) => {
@@ -612,6 +667,7 @@ app.get('/confirm/:email', confirmEmailLimiter, async (req, res) => {
     return res.send('Invalid email format.');
   }
 
+  // Get user email
   const user = await getUserByEmail(req.params.email);
 
   // Check if the user exists
@@ -650,13 +706,14 @@ app.get('/landing/:email', landingLimiter, isAuthenticated, async (req, res) => 
 
   // Get the max number of updates per day for a user
   const maxUpdates = tierUpdateLimits[userTier];
-  
+
   // Check how many updates the user has left today
   var updatesLeft = maxUpdates - user.updates;
   var canUpdate = true;
   if (updatesLeft <= 0) {
     canUpdate = false;
-    updatesLeft = 0};
+    updatesLeft = 0
+  };
 
   // Check if station is live
   let stationLive = false;
@@ -698,9 +755,11 @@ app.post('/update-station', updateStationLimiter, isAuthenticated, upload.single
     // Fetch the station from the database
     const station = await getStationByEmail(email);
 
+    // if file is present
     if (req.file) {
       // Validate file size
       const radioMixFilesizeKB = req.file.size / 1000;
+      // If uploaded filesize is over the limit for their tier
       if (radioMixFilesizeKB > tierFilesizeLimits[userTier]) {
         console.log('User tried to upload past their filesize limit, disabling their account');
         user.disabled = true;
@@ -733,6 +792,7 @@ app.post('/update-station', updateStationLimiter, isAuthenticated, upload.single
       return res.redirect('/');
     }
 
+    // Initialize radio mix variables
     let radioMix = null;
     let originalFilename = null;
     let audioDuration = req.body.audioDuration;
@@ -748,12 +808,12 @@ app.post('/update-station', updateStationLimiter, isAuthenticated, upload.single
         radioMix = station.radioMix;
         originalFilename = station.originalFilename;
       } else {
-        
-      // If the station exists and has an existing radio mix, delete it first
-      if (station && station.radioMix) {
-        console.log('Deleting old file:', station.radioMix);
-        await deleteFileFromS3(S3_BUCKET_NAME, station.radioMix);
-      }
+
+        // If the station exists and has an existing radio mix, delete it first
+        if (station && station.radioMix) {
+          console.log('Deleting old file:', station.radioMix);
+          await deleteFileFromS3(S3_BUCKET_NAME, station.radioMix);
+        }
 
         // A new file was uploaded, upload it to S3
         const fileKey = `${email}/${Date.now()}-${req.file.originalname}`;
@@ -775,7 +835,7 @@ app.post('/update-station', updateStationLimiter, isAuthenticated, upload.single
     let name = req.body.name.trim();
     name = name.replace(/\s+/g, '-');
     name = name.toLowerCase();
-      // Validate the name format: only alphanumeric characters and hyphens are allowed
+    // Validate the name format: only alphanumeric characters and hyphens are allowed
     if (!validNameRegex.test(name)) {
       badName = true;
     }
@@ -798,7 +858,7 @@ app.post('/update-station', updateStationLimiter, isAuthenticated, upload.single
       await updateUser(user);
       return res.redirect('/');
     }
-  
+
     const youtubeUrl = req.body.youtubeUrl;
     const socialLink = req.body.socialLink;
 
@@ -831,21 +891,20 @@ app.post('/update-station', updateStationLimiter, isAuthenticated, upload.single
   }
 });
 
-
 // Account page
 app.get('/account', accountLimiter, isAuthenticated, async (req, res) => {
   console.log('GET /account triggered');
-  
+
   // Get the logged-in user's email from the session
   const email = req.session.email;
-  
+
   // Validate the email from the session
   if (!email || !emailRegex.test(email)) {
     return res.status(400).json({ message: 'Invalid email format or no email in session' });
   }
 
   const user = await getUserByEmail(email);
-  
+
   if (user) {
     const userDataForView = {
       email: user.email,
@@ -857,8 +916,6 @@ app.get('/account', accountLimiter, isAuthenticated, async (req, res) => {
     res.status(404).send('Account not found');
   }
 });
-
-
 
 // Manage Subscription Tier page
 app.get('/manage-tier', manageTierLimiter, isAuthenticated, async (req, res) => {
@@ -884,7 +941,6 @@ app.get('/manage-tier', manageTierLimiter, isAuthenticated, async (req, res) => 
     res.status(404).send('User not found');
   }
 });
-
 
 // Checkout session for stripe
 app.post('/create-checkout-session', createCheckoutSessionLimiter, isAuthenticated, async (req, res) => {
@@ -954,7 +1010,7 @@ app.get('/payment-success', paymentSuccessLimiter, async (req, res) => {
 
     if (session.payment_status === 'paid') {
       const user = await getUserByEmail(email);
-      
+
       if (user) {
         const now = new Date();
         let subscriptionEndDate = new Date(now);
@@ -1019,6 +1075,7 @@ app.post('/update-tier', updateTierLimiter, isAuthenticated, async (req, res) =>
   }
 });
 
+// Handle logout
 app.get('/logout', logoutLimiter, async (req, res) => {
   console.log('GET /logout triggered');
   req.session.destroy((err) => {
@@ -1043,16 +1100,16 @@ app.post('/check-station-name', checkStationNameLimiter, isAuthenticated, async 
 
   name = name.replace(/\s+/g, '-');
   name = name.toLowerCase();
- 
-  // Validate the name format: only alphanumeric characters and hyphens are allowed
- if (!validNameRegex.test(name)) {
-  return res.status(400).json({ available: false, error: 'Invalid name format. Only letters, numbers, and hyphens are allowed.' });
-}
 
-    // Use leo-profanity to check if the name is profane
-    if (leoProfanity.check(name)) {
-      return res.status(400).json({ available: false, error: 'Station name contains inappropriate language. Please choose a different name.' });
-    }
+  // Validate the name format: only alphanumeric characters and hyphens are allowed
+  if (!validNameRegex.test(name)) {
+    return res.status(400).json({ available: false, error: 'Invalid name format. Only letters, numbers, and hyphens are allowed.' });
+  }
+
+  // Use leo-profanity to check if the name is profane
+  if (leoProfanity.check(name)) {
+    return res.status(400).json({ available: false, error: 'Station name contains inappropriate language. Please choose a different name.' });
+  }
 
   // Check if the name is reserved
   if (reservedStationNames.includes(name)) {
@@ -1060,7 +1117,7 @@ app.post('/check-station-name', checkStationNameLimiter, isAuthenticated, async 
   }
 
   try {
-     // Check if station exists and doesn't belong to them
+    // Check if station exists and doesn't belong to them
     const stationExists = await getStationByName(name);
     if (stationExists && stationExists.email !== email) {
       return res.status(200).json({ available: false, error: 'This station name is already taken.' });
@@ -1107,7 +1164,11 @@ app.get('/:name', nameLimiter, async (req, res) => {
   }
 });
 
-// Start the server
+
+// -------------------------------
+// Start server
+// -------------------------------
+
 app.listen(3000, () => {
   console.log('Server running on http://localhost:3000');
 });

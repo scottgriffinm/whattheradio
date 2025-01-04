@@ -1,3 +1,11 @@
+<!-- 
+login.ejs
+
+Provides a user interface for login and signup. Includes email/password fields, dynamic error handling, and form validation. Supports switching between login and signup modes, password visibility toggling, and placeholder social login integration.
+
+Author: Scott Griffin
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +13,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>What The Radio?</title>
   <link rel="icon" href="https://d1xwysupjizl5b.cloudfront.net/faviconlogo.png" type="image/png">
-  <style>@import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&display=swap');
+  
+  <!-- Stylesheet -->
+  <style>
+  /* Import Google Font */
+  @import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&display=swap');
 
     * {
       border: 0;
@@ -70,6 +82,8 @@
       display: flex;
       flex-direction: column;
     }
+
+    /* Login styles */
     .login {
       display: flex;
       flex-direction: column;
@@ -543,6 +557,7 @@
     }
     
     
+     /* Responsive media query for system dark theme */
     @media (prefers-color-scheme: dark) {
       :root {
         --bg: hsl(var(--hue), 10%, 10%);
@@ -612,6 +627,8 @@
         background-color: hsl(0, 0%, 20%);
       }
     }
+
+    /* Responsive media query for mobile devices */
     @media (min-width: 768px) {
       .login__column {
         padding: 1.5em 3em;
@@ -628,6 +645,7 @@
 </head>
 <body>
 
+  <!-- SVGS -->
   <svg display="none">
     <symbol id="avatar" viewbox="0 0 32 32">
       <g fill="currentColor">
@@ -664,7 +682,7 @@
     </symbol>
   </svg>
 
-
+<!-- Login form -->
   <form class="login" method="post" action="">
     <div class="login__column">
       <div class="login__header">
@@ -752,7 +770,10 @@
   </form>
 
 
-  <script>window.addEventListener("DOMContentLoaded", () => {
+  <!-- Javascript -->
+  <script>
+  
+  window.addEventListener("DOMContentLoaded", () => {
     const login = new LoginForm("form");
   });
 
@@ -764,6 +785,8 @@
   event.preventDefault(); // Prevent the default action of the link
   alert("To reset your password please email disagreeonline@gmail.com with your desired new password :-)");
 });
+
+// Class for login form
   class LoginForm {
     constructor(el) {
       this.el = document.querySelector(el);
@@ -1172,8 +1195,6 @@ removeTermsCheckbox() {
   }
 }
 
-
-
     loginRevertData(revertAll = false) {
       this.loginStage = 0;
       this.password = "";
@@ -1197,6 +1218,8 @@ removeTermsCheckbox() {
       this.passwordShow = !this.passwordShow;
     }
   }
+
+  // State objects
   
   const AccessMode = {
     SignIn: 0,
@@ -1229,9 +1252,7 @@ removeTermsCheckbox() {
     Hide: "Hide password",
     Show: "Show password"
   };
-  document.querySelector('.login__social-btn--google').addEventListener('click', function () {
-  alert('Continue with Google is currently in development - will be available very soon!');
-});
+
   </script>
 </body>
 </html>
