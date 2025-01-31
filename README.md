@@ -1,13 +1,17 @@
 <img src="https://github.com/user-attachments/assets/e3457989-663f-45a2-8010-0b6eedd836cd" alt="headerlogo" width="800">
 
+---
 
+An Express web app for building and sharing custom radio stations. 
 
+Some features:
 
-A radio station hosting platform built with Express.
+- **A station builder** for uploading radio mixes and pairing them with YouTube videos.
+- **A discover page** to explore all created stations.
+- **Free and paid tiers**, with **Stripe integration** for seamless payments.
+- **AWS-powered hosting and content delivery** for reliable streaming.
 
-Features a custom radio station builder, a discover page for all created stations, and free and paid tiers. Includes Stripe integration and AWS hosting and content delivery.
-
-Radio stations are created by uploading a radio mix and choosing a YouTube video. The radio station "streams" live by downloading the radio mix, then starting the audio and YouTube video relative to time. 
+Stations "stream" by synchronizing the uploaded mix with a YouTube video, relative to the listeners current time.
 
 Hosted at [whattheradio.io](https://whattheradio.io)
 
