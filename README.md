@@ -1,4 +1,7 @@
-![headerlogo](https://github.com/user-attachments/assets/e3457989-663f-45a2-8010-0b6eedd836cd)
+<img src="https://github.com/user-attachments/assets/e3457989-663f-45a2-8010-0b6eedd836cd" alt="headerlogo" width="800">
+
+
+
 
 A radio station hosting platform built with Express.
 
