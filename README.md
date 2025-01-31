@@ -2,7 +2,7 @@
 
 ---
 
-An Express web app for building and sharing custom radio stations. 
+An web app for building and sharing custom radio stations. 
 
 Some features:
 
@@ -13,7 +13,7 @@ Some features:
 
 Stations "stream" by synchronizing the uploaded mix with a YouTube video, relative to the listeners current time.
 
-[Full demo](https://vimeo.com/1052428441?share=copy)
+[Full demo here](https://vimeo.com/1052428441?share=copy)
 
 Hosted at [whattheradio.io](https://whattheradio.io)
 
