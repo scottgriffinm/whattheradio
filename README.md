@@ -2,7 +2,7 @@
 
 ---
 
-An web app for building and sharing custom radio stations. 
+An platform for building and sharing radio stations. 
 
 Some features:
 
